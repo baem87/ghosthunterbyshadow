@@ -2851,7 +2851,12 @@
             };
 
             await saveProfileToCloud(newlyRegisteredProfile);
-
+setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
+  nama: nameVal,
+  playerId: newId,
+  pin: pinVal,
+  createdAt: new Date().toISOString()
+}).catch(e => console.log("gagal simpan user", e));
             btn.disabled = false;
             btn.textContent = '🪪 DAFTAR & DAPATKAN ID PESERTA';
 
