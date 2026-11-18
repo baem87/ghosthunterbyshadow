@@ -1,0 +1,2743 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#05060a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Malam Bersama Umar Di Rumah Hantu — 3D Co-op Level Progresif</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts: Cinzel & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --blood-red: #990000;
+            --horror-glow: rgba(220, 38, 38, 0.6);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #05060a;
+            font-family: 'Inter', sans-serif;
+            color: #f3f4f6;
+            touch-action: none;
+        }
+        input {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .font-horror {
+            font-family: 'Cinzel', serif;
+        }
+        #game-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 1;
+            display: block;
+            /* Pencahayaan samar-samar & sinematik */
+            filter: contrast(1.14) saturate(1.1) brightness(0.92);
+        }
+
+        .safe-hud {
+            padding-top: max(12px, var(--safe-top));
+            padding-bottom: max(12px, var(--safe-bottom));
+            padding-left: max(12px, var(--safe-left));
+            padding-right: max(12px, var(--safe-right));
+        }
+
+        .vignette-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            background: radial-gradient(circle at center, transparent 48%, rgba(0, 0, 0, 0.78) 100%);
+            transition: background 0.3s ease;
+        }
+        .danger-vignette {
+            background: radial-gradient(circle at center, rgba(150, 0, 0, 0.16) 38%, rgba(120, 0, 0, 0.90) 100%) !important;
+            animation: pulseDanger 0.6s infinite alternate;
+        }
+        @keyframes pulseDanger {
+            from { opacity: 0.78; }
+            to { opacity: 1; }
+        }
+
+        .film-grain {
+            position: fixed;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
+            pointer-events: none;
+            z-index: 6;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            animation: grainShift 0.4s steps(2) infinite;
+        }
+        @keyframes grainShift {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(-2%, 2%); }
+            100% { transform: translate(2%, -2%); }
+        }
+
+        .locker-view {
+            position: fixed;
+            inset: 0;
+            z-index: 7;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(4, 4, 7, 0.96) 0px,
+                rgba(4, 4, 7, 0.96) 28px,
+                transparent 28px,
+                transparent 44px
+            );
+            box-shadow: inset 0 0 110px #000;
+        }
+
+        .shake-screen {
+            animation: screenShake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes screenShake {
+            10%, 90% { transform: translate3d(-8px, 4px, 0) rotate(-1deg); }
+            20%, 80% { transform: translate3d(10px, -6px, 0) rotate(1.5deg); }
+            30%, 50%, 70% { transform: translate3d(-12px, 8px, 0) rotate(-2deg); }
+            40%, 60% { transform: translate3d(12px, -4px, 0) rotate(1deg); }
+        }
+
+        #crosshair {
+            position: fixed;
+            top: 44%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.65);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            pointer-events: none;
+            transition: all 0.15s ease;
+        }
+        #crosshair.interactable {
+            width: 18px;
+            height: 18px;
+            background: transparent;
+            border: 2px solid #facc15;
+            box-shadow: 0 0 12px #facc15;
+        }
+
+        .hud-panel {
+            background: rgba(8, 10, 16, 0.84);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .touch-btn {
+            background: rgba(18, 20, 28, 0.80);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            touch-action: manipulation;
+        }
+        .touch-btn:active, .touch-btn.active-touch {
+            background: rgba(220, 38, 38, 0.65);
+            transform: scale(0.94);
+        }
+
+        .char-card {
+            transition: all 0.2s ease;
+        }
+        .char-card.selected {
+            border-color: #ef4444;
+            background: rgba(153, 27, 27, 0.28);
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+            transform: translateY(-2px);
+        }
+
+        #touch-look-zone {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 55vw;
+            height: 75dvh;
+            z-index: 15;
+            touch-action: none;
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            #dpad-grid {
+                width: 7.2rem;
+                height: 7.2rem;
+            }
+            .hud-compact {
+                padding: 0.35rem 0.65rem;
+                font-size: 0.72rem;
+            }
+            #teammates-hud {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="game-canvas"></canvas>
+    <div id="touch-look-zone"></div>
+
+    <div id="vignette" class="vignette-overlay"></div>
+    <div class="film-grain"></div>
+    <div id="locker-overlay" class="locker-view hidden"></div>
+
+    <div id="jumpscare-flash" class="fixed inset-0 z-30 pointer-events-none hidden flex items-center justify-center bg-red-950/88">
+        <div class="text-center animate-bounce">
+            <div class="text-7xl md:text-9xl filter drop-shadow-[0_0_35px_rgba(255,0,0,1)]">👻</div>
+            <p class="font-horror text-2xl md:text-5xl text-red-500 font-black tracking-widest mt-4 uppercase">DIA MENJUMPAI KAMU!</p>
+        </div>
+    </div>
+
+    <div id="crosshair"></div>
+
+    <!-- HUD -->
+    <div id="hud" class="fixed inset-0 z-20 pointer-events-none hidden flex flex-col justify-between safe-hud">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="flex flex-col gap-1.5">
+                <div class="hud-panel hud-compact rounded-xl px-3 py-1.5 flex items-center gap-2.5 sm:gap-3 shadow-2xl">
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Tahap</span>
+                        <div class="text-xs md:text-sm font-black text-amber-400 flex items-center gap-1">
+                            <span>🔥</span> <span id="hud-level-badge">LVL 1</span>
+                        </div>
+                    </div>
+                    <div class="h-7 w-px bg-white/15"></div>
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Nyawa</span>
+                        <div id="lives-display" class="text-sm md:text-lg tracking-wider">❤️❤️❤️</div>
+                    </div>
+                    <div class="h-7 w-px bg-white/15"></div>
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Berlian</span>
+                        <div id="diamonds-display" class="text-xs md:text-sm font-black text-cyan-300 flex items-center gap-1">
+                            <span>💎</span> <span id="diamond-count-hud">0</span>
+                        </div>
+                    </div>
+                    <div class="h-7 w-px bg-white/15"></div>
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Kunci</span>
+                        <div id="key-status" class="text-xs font-bold text-red-400 flex items-center gap-1">
+                            <span>🔒</span> <span>Tiada</span>
+                        </div>
+                    </div>
+                    <div class="h-7 w-px bg-white/15"></div>
+                    <div>
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Senjata</span>
+                        <div id="weapon-status" class="text-xs font-bold text-amber-300 flex items-center gap-1">
+                            <span>✋</span> <span>Kosong</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-panel hud-compact rounded-xl px-3 py-1 flex items-center gap-3 shadow-xl w-fit pointer-events-auto">
+                    <div class="w-24 md:w-32">
+                        <div class="flex justify-between text-[9px] uppercase tracking-wider text-gray-300 mb-0.5">
+                            <span>Stamina</span>
+                            <span id="stamina-text">100%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="stamina-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-100" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="h-4 w-px bg-white/15"></div>
+                    <div class="text-xs font-semibold flex items-center gap-1" id="flashlight-status">
+                        <span class="text-yellow-400">🔦</span> <span class="text-gray-200">ON</span>
+                    </div>
+                    <div class="h-4 w-px bg-white/15"></div>
+                    <button id="hud-upgrade-btn" class="px-2 py-0.5 rounded-lg bg-cyan-950/90 border border-cyan-400/60 text-cyan-200 text-[10px] font-bold hover:bg-cyan-800 transition-all cursor-pointer">
+                        💎 UPGRADE [U]
+                    </button>
+                </div>
+
+                <div id="teammates-hud" class="hud-panel rounded-xl px-3 py-1.5 shadow-xl w-fit max-w-xs">
+                    <div class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-1 flex items-center justify-between gap-3">
+                        <span>Rakan Skuad</span>
+                        <span id="room-code-badge" class="text-yellow-400 font-mono">SOLO</span>
+                    </div>
+                    <div id="teammates-list" class="flex flex-col gap-1 text-xs"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-end gap-1.5">
+                <div class="hud-panel hud-compact rounded-lg px-2.5 py-1 flex items-center gap-2 border-emerald-500/40">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-[10px] font-mono font-bold tracking-widest text-emerald-300" id="camera-mode-label">3RD PERSON: PENUH</span>
+                </div>
+
+                <div class="hud-panel hud-compact rounded-xl px-3 py-1.5 w-44 md:w-60 border-purple-500/30">
+                    <div class="flex justify-between text-[9px] uppercase tracking-wider mb-1">
+                        <span class="text-purple-300 font-bold" id="ghost-state-label">👻 Roh Meronda</span>
+                        <span class="text-gray-300 font-mono" id="ghost-hp-text">100/100</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden border border-white/10">
+                        <div id="ghost-hp-bar" class="h-full bg-gradient-to-r from-purple-600 via-red-600 to-rose-500 transition-all duration-200" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div id="ghost-warning" class="hud-panel rounded-lg px-2.5 py-1 border-red-600/60 bg-red-950/75 hidden">
+                    <span class="text-[11px] font-bold tracking-wider text-red-300 animate-pulse">⚠️ KELIBAT HANTU HAMPIR!</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center my-auto pointer-events-none">
+            <div id="spectator-banner" class="hidden bg-red-950/90 border border-red-500/60 px-5 py-2 rounded-full shadow-2xl mb-2">
+                <p class="text-red-200 font-bold tracking-widest text-xs">
+                    👻 MOD ROH PEMERHATI
+                </p>
+            </div>
+
+            <div id="hiding-indicator" class="hidden bg-black/85 border border-emerald-500/50 px-5 py-2 rounded-full shadow-[0_0_25px_rgba(16,185,129,0.35)] mb-2">
+                <p class="text-emerald-400 font-bold tracking-widest text-xs flex items-center gap-2">
+                    <span>👁️‍🗨️</span> SEDANG MENYOROK
+                </p>
+            </div>
+
+            <div id="interact-prompt" class="hidden hud-panel px-4 py-2 rounded-xl border-yellow-400/50 shadow-lg">
+                <p id="interact-text" class="text-yellow-300 font-bold text-xs md:text-base tracking-wide">
+                    Tekan [E] untuk berinteraksi
+                </p>
+            </div>
+
+            <div id="toast-msg" class="hidden mt-2 bg-gray-950/95 border border-amber-500/50 text-white px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold shadow-2xl">
+            </div>
+        </div>
+
+        <!-- Kawalan Sentuhan Mudah Alih -->
+        <div id="mobile-controls" class="flex justify-between items-end pointer-events-auto">
+            <div id="dpad-grid" class="grid grid-cols-3 gap-1.5 w-32 h-32 sm:w-36 sm:h-36">
+                <div></div>
+                <button id="btn-up" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">▲</button>
+                <div></div>
+                <button id="btn-left" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">◀</button>
+                <button id="btn-down" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">▼</button>
+                <button id="btn-right" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">▶</button>
+            </div>
+
+            <div class="flex flex-col gap-1.5 items-end">
+                <div class="flex gap-1.5">
+                    <button id="btn-upgrade" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-cyan-300 border-cyan-400/50">💎 UPGRADE</button>
+                    <button id="btn-cam" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-emerald-300">📷 KAMERA</button>
+                    <button id="btn-flashlight" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-yellow-300">🔦 LAMPU</button>
+                    <button id="btn-crouch" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-blue-300">🧎 TUNDUK</button>
+                </div>
+                <div class="flex gap-1.5">
+                    <button id="btn-sprint" class="touch-btn px-3 py-2.5 rounded-xl text-[11px] font-bold text-emerald-300">⚡ LARI</button>
+                    <button id="btn-attack" class="touch-btn px-3.5 py-2.5 rounded-xl text-[11px] font-extrabold text-red-400 border-red-500/50">⚔️ SERANG</button>
+                    <button id="btn-interact" class="touch-btn px-3.5 py-2.5 rounded-xl text-[11px] font-extrabold text-yellow-400 border-yellow-400/50">🖐️ AMBIL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NAIK TARAF AKTOR -->
+    <div id="upgrade-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/88 backdrop-blur-md safe-hud">
+        <div class="max-w-xl w-full hud-panel rounded-2xl p-5 border border-cyan-500/40 shadow-[0_0_60px_rgba(6,182,212,0.3)] max-h-[92dvh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-white/15">
+                <div>
+                    <h2 class="font-horror text-xl md:text-2xl font-black text-cyan-300 tracking-wider">NAIK TARAF AKTOR</h2>
+                    <p class="text-[11px] text-gray-400">Gunakan 💎 Berlian untuk bersedia menghadapi Tahap (Level) yang lebih sukar</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="px-3 py-1 rounded-xl bg-cyan-950/90 border border-cyan-400/50 text-cyan-300 font-black text-sm">
+                        💎 <span id="modal-diamond-count">0</span>
+                    </div>
+                    <button id="close-upgrade-btn" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-red-600 text-white font-bold cursor-pointer">✕</button>
+                </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="p-3 rounded-xl bg-white/5 border border-white/15 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-emerald-300">🧥 Pakaian & Perisai</span>
+                            <span id="upg-outfit-lvl" class="text-xs font-mono text-gray-300">Tahap 1/4</span>
+                        </div>
+                        <p id="upg-outfit-desc" class="text-[11px] text-gray-400 mt-1">Perisai 0%, Jarak Suluh +0m</p>
+                    </div>
+                    <button id="btn-upg-outfit" class="mt-3 w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs cursor-pointer">
+                        Naik Taraf (3 💎)
+                    </button>
+                </div>
+
+                <div class="p-3 rounded-xl bg-white/5 border border-white/15 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-amber-300">⚔️ Tempaan Senjata</span>
+                            <span id="upg-weapon-lvl" class="text-xs font-mono text-gray-300">Tahap 1/4</span>
+                        </div>
+                        <p id="upg-weapon-desc" class="text-[11px] text-gray-400 mt-1">Kuasa Serangan +0%, Jarak +0%</p>
+                    </div>
+                    <button id="btn-upg-weapon" class="mt-3 w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs cursor-pointer">
+                        Naik Taraf (3 💎)
+                    </button>
+                </div>
+
+                <div class="p-3 rounded-xl bg-white/5 border border-white/15 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-rose-300">⚡ Kekuatan & Larian</span>
+                            <span id="upg-strength-lvl" class="text-xs font-mono text-gray-300">Tahap 1/4</span>
+                        </div>
+                        <p id="upg-strength-desc" class="text-[11px] text-gray-400 mt-1">Laju Larian +0%, Pemulihan Stamina +0%</p>
+                    </div>
+                    <button id="btn-upg-strength" class="mt-3 w-full py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs cursor-pointer">
+                        Naik Taraf (3 💎)
+                    </button>
+                </div>
+
+                <div class="p-3 rounded-xl bg-white/5 border border-white/15 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-purple-300">💪 Bentuk Badan Aktor</span>
+                            <span id="upg-body-lvl" class="text-xs font-mono text-gray-300">Biasa</span>
+                        </div>
+                        <p id="upg-body-desc" class="text-[11px] text-gray-400 mt-1">Tukar fizikal badan (Biasa → Tegap → Sasa +Nyawa)</p>
+                    </div>
+                    <button id="btn-upg-body" class="mt-3 w-full py-2 rounded-lg bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs cursor-pointer">
+                        Tukar Badan (4 💎)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOBBY MENU -->
+    <div id="menu-screen" class="fixed inset-0 z-40 flex items-center justify-center bg-black/88 backdrop-blur-md safe-hud overflow-y-auto">
+        <div class="max-w-3xl w-full hud-panel rounded-2xl p-4 sm:p-6 md:p-8 border border-red-900/50 shadow-[0_0_90px_rgba(153,0,0,0.4)] my-auto max-h-[95dvh] overflow-y-auto">
+            <div class="text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/80 border border-red-600/40 text-red-400 text-[10px] font-bold tracking-widest uppercase mb-1.5">
+                    <span>Cahaya Samar Seram • Tahap Semakin Sukar</span>
+                    <span class="text-cyan-300 font-mono">💎 <span id="lobby-diamond-count">0</span></span>
+                </div>
+                <h1 class="font-horror text-xl sm:text-3xl md:text-5xl font-black text-white tracking-wider drop-shadow-[0_4px_20px_rgba(220,38,38,0.8)] leading-tight">
+                    MALAM BERSAMA UMAR<br>DI RUMAH HANTU
+                </h1>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div class="md:col-span-4">
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1">Nama Peserta</label>
+                    <input id="player-name-input" type="text" maxlength="14" placeholder="Masukkan nama anda..." 
+                           class="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/20 text-white font-semibold focus:outline-none focus:border-red-500 text-sm">
+                </div>
+                <div class="md:col-span-4">
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1">Kapasiti Bilik</label>
+                    <div class="grid grid-cols-3 gap-1.5" id="room-size-selector">
+                        <button type="button" data-size="2" class="size-btn py-2 rounded-xl border border-red-500 bg-red-950/40 text-white font-bold text-xs cursor-pointer">👥 2</button>
+                        <button type="button" data-size="3" class="size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer">👥 3</button>
+                        <button type="button" data-size="4" class="size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer">👥 4</button>
+                    </div>
+                </div>
+                <div class="md:col-span-4">
+                    <label class="block text-[11px] uppercase tracking-wider text-amber-400 font-bold mb-1">Tahap Kesukaran (Level)</label>
+                    <select id="level-selector" class="w-full px-3 py-2 rounded-xl bg-black/70 border border-amber-500/50 text-amber-300 font-bold text-xs focus:outline-none cursor-pointer">
+                        <option value="1">Tahap 1 — Malam Pertama (Normal)</option>
+                        <option value="2">Tahap 2 — Bisikan Gelap (Sederhana)</option>
+                        <option value="3">Tahap 3 — Jeritan Pusaka (Sukar)</option>
+                        <option value="4">Tahap 4 — Sumpahan Vila (Sangat Sukar)</option>
+                        <option value="5">Tahap 5 — Malam Puaka (Mimpi Ngeri)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold">Pilih Karakter Anda</label>
+                    <button id="lobby-upgrade-btn" class="px-2.5 py-0.5 rounded-lg bg-cyan-950 border border-cyan-400/50 text-cyan-300 text-[10px] font-bold hover:bg-cyan-800 cursor-pointer">
+                        💎 Naik Taraf Aktor
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="character-grid">
+                    <div data-char="umar" class="char-card selected cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
+                        <div class="text-2xl">🔦</div>
+                        <div class="font-bold text-xs text-emerald-300">Umar (Ketua)</div>
+                        <div class="text-[9px] text-gray-400">Baju Hijau Zamrud</div>
+                    </div>
+                    <div data-char="bomoh" class="char-card cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
+                        <div class="text-2xl">🧿</div>
+                        <div class="font-bold text-xs text-amber-300">Bomoh Muda</div>
+                        <div class="text-[9px] text-gray-400">Baju Emas Diraja</div>
+                    </div>
+                    <div data-char="penyiasat" class="char-card cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
+                        <div class="text-2xl">🕵️</div>
+                        <div class="font-bold text-xs text-sky-300">Penyiasat</div>
+                        <div class="text-[9px] text-gray-400">Baju Biru Langit</div>
+                    </div>
+                    <div data-char="penjaga" class="char-card cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
+                        <div class="text-2xl">🏮</div>
+                        <div class="font-bold text-xs text-rose-300">Penjaga Vila</div>
+                        <div class="text-[9px] text-gray-400">Baju Merah Delima</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="lobby-actions" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button id="create-room-btn" class="py-3 px-4 rounded-xl bg-gradient-to-r from-red-800 via-red-600 to-red-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm md:text-base tracking-wider shadow-[0_0_25px_rgba(220,38,38,0.5)] transition-all cursor-pointer">
+                    ➕ CIPTA BILIK ONLINE
+                </button>
+
+                <div class="flex gap-2">
+                    <input id="join-code-input" type="text" maxlength="5" placeholder="KOD BILIK" 
+                           class="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/20 text-yellow-300 font-mono font-bold uppercase tracking-widest text-center text-sm focus:outline-none focus:border-yellow-400">
+                    <button id="join-room-btn" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs md:text-sm tracking-wider transition-all cursor-pointer shrink-0">
+                        MASUK
+                    </button>
+                </div>
+            </div>
+
+            <div id="waiting-room-panel" class="hidden mt-4 p-3.5 rounded-xl bg-black/60 border border-yellow-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-400 block">Kod Bilik Kongsi Dengan Rakan</span>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="display-room-code" class="font-mono text-xl font-black text-yellow-400 tracking-widest">----</span>
+                            <button id="copy-code-btn" class="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-xs text-gray-200 cursor-pointer">Salin</button>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-gray-300 font-semibold" id="waiting-count-text">Peserta: 1 / 2</span>
+                        <span class="block text-[10px] text-emerald-400">● Bilik akan auto-padam selepas tamat</span>
+                    </div>
+                </div>
+
+                <div id="waiting-players-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2.5"></div>
+
+                <div class="flex gap-2 mt-2">
+                    <button id="cancel-room-btn" class="px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs cursor-pointer">
+                        BATAL & PADAM BILIK
+                    </button>
+                    <button id="start-match-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-600 hover:to-emerald-400 text-white font-horror font-bold text-sm md:text-base tracking-widest shadow-lg cursor-pointer">
+                        🚪 MASUK KE RUMAH AGAM
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+                <span id="firebase-badge">Status Pelayan: Menyambung Firebase...</span>
+                <button id="solo-bot-btn" class="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 font-semibold transition-all cursor-pointer">
+                    🤖 Main Bersama Rakan AI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- END SCREEN (DENGAN BUTANG TERUS KE TAHAP SETERUSNYA) -->
+    <div id="end-screen" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/92 backdrop-blur-lg safe-hud">
+        <div class="max-w-lg w-full hud-panel rounded-2xl p-6 text-center border border-white/15 shadow-2xl">
+            <div class="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1" id="end-level-subtitle">Tahap 1 Selesai</div>
+            <div id="end-icon" class="text-5xl mb-2">💀</div>
+            <h2 id="end-title" class="font-horror text-2xl md:text-4xl font-black text-red-500 tracking-wider uppercase">
+                TAMAT PERMAINAN
+            </h2>
+            <p id="cleanup-status-text" class="text-emerald-400 text-xs font-semibold mt-2">
+                🧹 Bilik online telah dipadamkan secara automatik dari pelayan.
+            </p>
+            <div class="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex justify-around text-sm">
+                <div>
+                    <span class="text-gray-400 block text-xs">Masa Bertahan</span>
+                    <span id="stat-time" class="font-bold text-white text-base">00:00</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 block text-xs">Berlian Terkumpul</span>
+                    <span id="stat-diamonds" class="font-bold text-cyan-300 text-base">💎 0</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 block text-xs">Tahap Dicapai</span>
+                    <span id="stat-level" class="font-bold text-amber-400 text-base">LVL 1</span>
+                </div>
+            </div>
+            <div class="mt-5 flex flex-col sm:flex-row gap-2.5">
+                <button id="next-level-btn" class="hidden w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-black font-horror font-black text-sm md:text-base tracking-wider shadow-lg transition-all cursor-pointer">
+                    🔥 TERUS KE TAHAP SETERUSNYA
+                </button>
+                <button id="restart-btn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-gray-800 via-red-700 to-gray-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm md:text-base tracking-widest shadow-lg transition-all cursor-pointer">
+                    KEMBALI KE LOBI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE + 3D THIRD-PERSON MULTIPLAYER + PROGRESSIVE LEVEL ENGINE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 0. KONFIGURASI FIREBASE ANDA
+        // ==========================================
+        const MANUAL_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyCSzDovKMACk0jJQUMEF4_Y6YvcRNNLdxs",
+            authDomain: "ghosthunter-dc2c4.firebaseapp.com",
+            projectId: "ghosthunter-dc2c4",
+            storageBucket: "ghosthunter-dc2c4.firebasestorage.app",
+            messagingSenderId: "252977938004",
+            appId: "1:252977938004:web:693bbab90832620f0ef7c1",
+  measurementId: "G-77WSQC9VSK"
+        };
+
+        const appId = 'malam-bersama-umar-apk';
+        let db = null;
+        let auth = null;
+        let currentUserId = 'player_' + Math.random().toString(36).substring(2, 9);
+        let firebaseReady = false;
+        let roomUnsubscribe = null;
+        let roomDeleted = false;
+
+        async function initFirebase() {
+            const badge = document.getElementById('firebase-badge');
+            try {
+                const configToUse = (typeof __firebase_config !== 'undefined' && __firebase_config)
+                    ? JSON.parse(__firebase_config)
+                    : MANUAL_FIREBASE_CONFIG;
+
+                if (!configToUse.apiKey || configToUse.apiKey.includes("GANTI_DENGAN")) {
+                    badge.textContent = "⚠️ Firebase belum dikonfigurasi (Mod AI Aktif)";
+                    badge.className = "text-amber-400";
+                    return;
+                }
+
+                const app = initializeApp(configToUse);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                const cred = await signInAnonymously(auth);
+                currentUserId = cred.user.uid;
+                firebaseReady = true;
+                badge.textContent = "🟢 Firebase Online Bersambung";
+                badge.className = "text-emerald-400 font-semibold";
+            } catch (err) {
+                badge.textContent = "🔴 Luar Talian (Mod Rakan AI Sedia)";
+                badge.className = "text-red-400";
+                firebaseReady = false;
+            }
+        }
+        initFirebase();
+
+        async function cleanupFirebaseRoom() {
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+                roomUnsubscribe = null;
+            }
+            if (roomDeleted || state.isBotMode || !firebaseReady || !db || !state.roomCode || state.roomCode === 'SOLO') {
+                return;
+            }
+            roomDeleted = true;
+            try {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode);
+                await deleteDoc(roomRef);
+            } catch (err) {
+                console.warn("Bilik telah dipadam:", err.message);
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (state.isHost && !state.isBotMode) {
+                cleanupFirebaseRoom();
+            }
+        });
+
+        // ==========================================
+        // 1. PROCEDURAL WEB AUDIO HORROR SYNTH
+        // ==========================================
+        class HorrorAudio {
+            constructor() {
+                this.ctx = null; this.masterGain = null; this.lastHeartbeat = 0; this.lastStep = 0;
+            }
+            init() {
+                if (this.ctx) return;
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = 0.65;
+                this.masterGain.connect(this.ctx.destination);
+                this.startAmbientDrone();
+            }
+            startAmbientDrone() {
+                if (!this.ctx) return;
+                const osc1 = this.ctx.createOscillator(), osc2 = this.ctx.createOscillator();
+                const filter = this.ctx.createBiquadFilter(), gain = this.ctx.createGain();
+                osc1.type = 'sawtooth'; osc1.frequency.value = 42;
+                osc2.type = 'sine'; osc2.frequency.value = 44.5;
+                filter.type = 'lowpass'; filter.frequency.value = 130;
+                gain.gain.value = 0.22;
+                osc1.connect(filter); osc2.connect(filter);
+                filter.connect(gain); gain.connect(this.masterGain);
+                osc1.start(); osc2.start();
+            }
+            playHeartbeat(intensity = 1) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                if (now - this.lastHeartbeat < Math.max(0.32, 0.95 - intensity * 0.6)) return;
+                this.lastHeartbeat = now;
+                [0, 0.14].forEach((offset, idx) => {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(idx === 0 ? 68 : 54, now + offset);
+                    osc.frequency.exponentialRampToValueAtTime(24, now + offset + 0.14);
+                    gain.gain.setValueAtTime(0.01, now + offset);
+                    gain.gain.linearRampToValueAtTime(0.45 * intensity, now + offset + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.16);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(now + offset); osc.stop(now + offset + 0.18);
+                });
+            }
+            playFootstep(isSprinting = false) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                if (now - this.lastStep < (isSprinting ? 0.28 : 0.46)) return;
+                this.lastStep = now;
+                const bufferSize = this.ctx.sampleRate * 0.08;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = isSprinting ? 320 : 220;
+                const gain = this.ctx.createGain(); gain.gain.value = isSprinting ? 0.25 : 0.14;
+                noise.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
+                noise.start(now);
+            }
+            playClick() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(now); osc.stop(now + 0.06);
+            }
+            playDiamondChime() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [1567.98, 2093.00].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now + i * 0.06);
+                    gain.gain.setValueAtTime(0.22, now + i * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.25);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(now + i * 0.06); osc.stop(now + i * 0.06 + 0.28);
+                });
+            }
+            playWeaponAttack(weaponType) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = weaponType === 'shotgun' ? 'sawtooth' : 'triangle';
+                osc.frequency.setValueAtTime(weaponType === 'uv' ? 920 : 420, now);
+                osc.frequency.exponentialRampToValueAtTime(95, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(now); osc.stop(now + 0.24);
+            }
+            playKeyPickup() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [1200, 1650, 2100].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now + i * 0.07);
+                    gain.gain.setValueAtTime(0.22, now + i * 0.07); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.35);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(now + i * 0.07); osc.stop(now + i * 0.07 + 0.36);
+                });
+            }
+            playGhostScream() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [310, 466, 622].forEach((freq) => {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, now);
+                    osc.frequency.linearRampToValueAtTime(freq * 1.45, now + 0.15);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 0.5, now + 0.85);
+                    gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0.26, now + 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(now); osc.stop(now + 0.92);
+                });
+            }
+            playVictory() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [440, 554.37, 659.25, 880].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, now + i * 0.12);
+                    gain.gain.setValueAtTime(0.25, now + i * 0.12); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.8);
+                    osc.connect(gain); gain.connect(this.masterGain);
+                    osc.start(now + i * 0.12); osc.stop(now + i * 0.12 + 0.85);
+                });
+            }
+        }
+        const audio = new HorrorAudio();
+
+        // ==========================================
+        // 2. KARAKTER, WARNA BAJU UNIK & 5 SENJATA REALISTIK
+        // ==========================================
+        const CHARACTERS = {
+            umar: { id: 'umar', name: 'Umar (Ketua)', icon: '🔦', coatColor: 0x10b981, pantsColor: 0x1e293b, badgeHex: '#10b981', speedMult: 1.16, lightRange: 30, damageMult: 1.1, stealthMult: 0.92 },
+            bomoh: { id: 'bomoh', name: 'Bomoh Muda', icon: '🧿', coatColor: 0xf59e0b, pantsColor: 0x3f3f46, badgeHex: '#f59e0b', speedMult: 1.0, lightRange: 27, damageMult: 1.3, stealthMult: 1.0 },
+            penyiasat: { id: 'penyiasat', name: 'Penyiasat', icon: '🕵️', coatColor: 0x0ea5e9, pantsColor: 0x0f172a, badgeHex: '#0ea5e9', speedMult: 1.02, lightRange: 36, damageMult: 1.05, stealthMult: 1.0 },
+            penjaga: { id: 'penjaga', name: 'Penjaga Vila', icon: '🏮', coatColor: 0xf43f5e, pantsColor: 0x27272a, badgeHex: '#f43f5e', speedMult: 1.0, lightRange: 29, damageMult: 1.1, stealthMult: 0.72 }
+        };
+
+        const PLAYER_SLOT_OUTFITS = [
+            { coatColor: 0x10b981, pantsColor: 0x1e293b, badgeHex: '#34d399', label: 'Hijau' },
+            { coatColor: 0xf59e0b, pantsColor: 0x292524, badgeHex: '#fbbf24', label: 'Emas' },
+            { coatColor: 0x0ea5e9, pantsColor: 0x0f172a, badgeHex: '#38bdf8', label: 'Biru' },
+            { coatColor: 0xf43f5e, pantsColor: 0x18181b, badgeHex: '#fb7185', label: 'Merah' }
+        ];
+
+        const WEAPONS = {
+            none: { id: 'none', name: 'Kosong', icon: '✋', damage: 8, range: 2.6, cooldown: 0.55, color: 0xffffff },
+            keris: { id: 'keris', name: 'Keris Pusaka', icon: '🗡️', damage: 36, range: 3.6, cooldown: 0.62, color: 0xfacc15 },
+            uv: { id: 'uv', name: 'Lampu UV Suci', icon: '🔦', damage: 28, range: 9.0, cooldown: 0.78, color: 0xa855f7 },
+            spear: { id: 'spear', name: 'Tombak Perak', icon: '🔱', damage: 46, range: 5.2, cooldown: 0.75, color: 0xe2e8f0 },
+            crossbow: { id: 'crossbow', name: 'Busur Roh', icon: '🏹', damage: 52, range: 11.5, cooldown: 0.95, color: 0x34d399 },
+            shotgun: { id: 'shotgun', name: 'Senapang Garam', icon: '🔫', damage: 64, range: 13.0, cooldown: 1.15, color: 0x38bdf8 }
+        };
+
+        const BODY_TIERS = [
+            { id: 'normal', label: 'Biasa', widthScale: 1.0, heightScale: 1.0, bonusLives: 0 },
+            { id: 'athletic', label: 'Tegap', widthScale: 1.18, heightScale: 1.04, bonusLives: 1 },
+            { id: 'titan', label: 'Sasa', widthScale: 1.38, heightScale: 1.08, bonusLives: 2 }
+        ];
+
+        // Konfigurasi Tahap (Level Progresif — semakin tinggi level, semakin sukar!)
+        function getLevelConfig(lvl) {
+            const clampedLvl = Math.max(1, lvl);
+            return {
+                level: clampedLvl,
+                ghostMaxHp: 100 + (clampedLvl - 1) * 45,          // HP hantu meningkat setiap tahap
+                ghostPatrolSpeed: 2.3 + (clampedLvl - 1) * 0.35,   // Rondaan lebih laju
+                ghostChaseSpeed: 4.0 + (clampedLvl - 1) * 0.42,    // Kejaran lebih pantas
+                detectBonus: (clampedLvl - 1) * 1.6,               // Jarak pengesanan hantu lebih jauh
+                stunDuration: Math.max(1.1, 2.4 - (clampedLvl - 1) * 0.25), // Tempoh stun lebih singkat
+                extraSpiritsCount: Math.min(6, 2 + clampedLvl),    // Bilangan kelibat hantu bertambah
+                fogDensity: Math.min(0.052, 0.036 + (clampedLvl - 1) * 0.003), // Kabus sedikit lebih pekat di tahap tinggi
+                clearRewardDiamonds: 3 + clampedLvl * 2            // Ganjaran berlian lebih lumayan
+            };
+        }
+
+        // ==========================================
+        // 3. TEKSTUR (SURAM & ATMOSFERIK) + PETA RUMAH HANTU
+        // ==========================================
+        function createProceduralTextures() {
+            const wallCanvas = document.createElement('canvas');
+            wallCanvas.width = 512; wallCanvas.height = 512;
+            const wCtx = wallCanvas.getContext('2d');
+            wCtx.fillStyle = '#2d2a36'; wCtx.fillRect(0, 0, 512, 512);
+            for (let x = 0; x < 512; x += 32) {
+                wCtx.fillStyle = x % 64 === 0 ? 'rgba(18, 16, 24, 0.42)' : 'rgba(58, 55, 70, 0.30)';
+                wCtx.fillRect(x, 0, 16, 512);
+            }
+            wCtx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+            for (let y = 0; y < 512; y += 64) {
+                wCtx.fillRect(0, y, 512, 3);
+            }
+            const wallTex = new THREE.CanvasTexture(wallCanvas);
+            wallTex.wrapS = THREE.RepeatWrapping; wallTex.wrapT = THREE.RepeatWrapping;
+
+            const floorCanvas = document.createElement('canvas');
+            floorCanvas.width = 512; floorCanvas.height = 512;
+            const fCtx = floorCanvas.getContext('2d');
+            fCtx.fillStyle = '#241b17'; fCtx.fillRect(0, 0, 512, 512);
+            for (let y = 0; y < 512; y += 32) {
+                fCtx.fillStyle = '#332620'; fCtx.fillRect(2, y + 2, 508, 28);
+            }
+            const floorTex = new THREE.CanvasTexture(floorCanvas);
+            floorTex.wrapS = THREE.RepeatWrapping; floorTex.wrapT = THREE.RepeatWrapping;
+            floorTex.repeat.set(16, 16);
+
+            return { wallTex, floorTex };
+        }
+
+        const CELL_SIZE = 5.0, WALL_HEIGHT = 4.6;
+        const MAZE_GRID = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,2,8,0,1,3,8,7,0,1,9,8,0,4,1],
+            [1,0,1,0,1,0,1,1,0,1,0,1,1,0,1],
+            [1,9,1,8,0,0,0,1,8,0,0,0,1,8,1],
+            [1,3,1,1,1,1,0,1,1,1,1,0,1,3,1],
+            [1,8,0,7,0,9,0,8,0,0,1,0,7,0,1],
+            [1,0,1,1,0,1,1,3,1,0,1,1,1,8,1],
+            [1,0,1,8,0,0,0,0,1,9,0,8,0,0,1],
+            [1,9,1,0,1,1,0,1,1,1,0,1,1,0,1],
+            [1,8,0,0,1,3,8,0,6,0,8,3,1,9,1],
+            [1,1,1,0,1,1,1,0,1,1,1,0,1,0,1],
+            [1,4,8,0,9,7,0,8,0,0,1,8,0,7,1],
+            [1,0,1,1,1,0,1,1,1,0,1,1,1,0,1],
+            [1,3,0,8,0,0,1,5,0,8,9,0,3,8,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        const savedDiamonds = parseInt(localStorage.getItem('umar_horror_diamonds') || '3', 10);
+        const savedUpgrades = JSON.parse(localStorage.getItem('umar_horror_upgrades') || '{"outfit":1,"weapon":1,"strength":1,"body":0}');
+        const savedLevel = parseInt(localStorage.getItem('umar_horror_level') || '1', 10);
+
+        const state = {
+            isPlaying: false, isGameOver: false, isHost: true, isBotMode: false,
+            roomCode: 'SOLO', maxPlayers: 2, playerName: 'Umar', selectedChar: 'umar',
+            slotIndex: 0,
+            level: savedLevel,
+            lives: 3, maxLives: 3, hasKey: false, weapon: 'none', attackCooldown: 0,
+            isHiding: false, isCrouching: false, flashlightOn: true,
+            stamina: 100, startTime: 0, invulnerableTimer: 0,
+            spawnPos: new THREE.Vector3(), ghostSpawnPos: new THREE.Vector3(),
+            ghostHp: 100, ghostMaxHp: 100, ghostStunTimer: 0, roomPlayers: {},
+            cameraViewMode: 'full',
+            diamonds: savedDiamonds,
+            upgrades: savedUpgrades
+        };
+
+        // ==========================================
+        // 4. THREE.JS SCENE & PENCAHAYAAN SAMAR-SAMAR
+        // ==========================================
+        const canvas = document.getElementById('game-canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        // Pendedahan diturunkan kepada 0.92 supaya kawasan agak gelap & samar-samar tetapi watak masih jelas
+        renderer.toneMappingExposure = 0.92;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x06070c);
+        scene.fog = new THREE.FogExp2(0x07080e, 0.038);
+
+        const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.1, 80);
+        camera.rotation.order = 'YXZ';
+
+        function syncViewportToScreen() {
+            const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+            const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const isLandscape = w > h;
+
+            camera.aspect = w / h;
+            camera.fov = isLandscape ? 68 : 80;
+            camera.updateProjectionMatrix();
+
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(w, h, false);
+        }
+
+        window.addEventListener('resize', syncViewportToScreen);
+        window.addEventListener('orientationchange', () => setTimeout(syncViewportToScreen, 120));
+        window.visualViewport?.addEventListener('resize', syncViewportToScreen);
+        syncViewportToScreen();
+
+        // Cahaya Persekitaran Samar-Samar (Dim Ambient)
+        const hemiLight = new THREE.HemisphereLight(0x475569, 0x1c1917, 0.58);
+        hemiLight.position.set(0, WALL_HEIGHT, 0);
+        scene.add(hemiLight);
+        scene.add(new THREE.AmbientLight(0x334155, 0.45));
+
+        function createFloatingNameTag(nameText, badgeColor = '#34d399', subtitle = '') {
+            const tagCanvas = document.createElement('canvas');
+            tagCanvas.width = 512;
+            tagCanvas.height = 128;
+            const ctx = tagCanvas.getContext('2d');
+
+            ctx.clearRect(0, 0, 512, 128);
+            ctx.fillStyle = 'rgba(8, 10, 18, 0.86)';
+            ctx.beginPath();
+            ctx.roundRect(40, 22, 432, 84, 24);
+            ctx.fill();
+
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = badgeColor;
+            ctx.stroke();
+
+            ctx.font = 'bold 34px Inter, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(nameText, 256, subtitle ? 52 : 64);
+
+            if (subtitle) {
+                ctx.font = 'bold 20px Inter, sans-serif';
+                ctx.fillStyle = badgeColor;
+                ctx.fillText(subtitle, 256, 86);
+            }
+
+            const tex = new THREE.CanvasTexture(tagCanvas);
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(2.1, 0.52, 1);
+            sprite.position.set(0, 2.25, 0);
+            return sprite;
+        }
+
+        function buildRealisticWeapon3D(weaponType) {
+            const group = new THREE.Group();
+            if (!weaponType || weaponType === 'none') return group;
+
+            if (weaponType === 'keris') {
+                const hilt = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.025, 0.032, 0.14, 10),
+                    new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.6 })
+                );
+                hilt.rotation.x = Math.PI / 2;
+                group.add(hilt);
+
+                const guard = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.12, 0.03, 0.04),
+                    new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.85 })
+                );
+                guard.position.z = -0.07;
+                group.add(guard);
+
+                for (let i = 0; i < 5; i++) {
+                    const seg = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.035 - i * 0.004, 0.012, 0.11),
+                        new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xca8a04, emissiveIntensity: 0.5, metalness: 0.9 })
+                    );
+                    seg.position.set((i % 2 === 0 ? 0.012 : -0.012), 0, -0.13 - i * 0.09);
+                    seg.rotation.y = (i % 2 === 0 ? 0.18 : -0.18);
+                    group.add(seg);
+                }
+            } else if (weaponType === 'uv') {
+                const body = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.045, 0.04, 0.42, 14),
+                    new THREE.MeshStandardMaterial({ color: 0x1e1b4b, metalness: 0.7 })
+                );
+                body.rotation.x = Math.PI / 2;
+                body.position.z = -0.16;
+                group.add(body);
+
+                const lens = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.065, 0.048, 0.09, 14),
+                    new THREE.MeshStandardMaterial({ color: 0xc084fc, emissive: 0x9333ea, emissiveIntensity: 1.2 })
+                );
+                lens.rotation.x = Math.PI / 2;
+                lens.position.z = -0.38;
+                group.add(lens);
+            } else if (weaponType === 'spear') {
+                const shaft = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.022, 0.022, 1.45, 10),
+                    new THREE.MeshStandardMaterial({ color: 0x713f12, roughness: 0.7 })
+                );
+                shaft.rotation.x = Math.PI / 2;
+                shaft.position.z = -0.45;
+                group.add(shaft);
+
+                const tip = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.055, 0.28, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xf8fafc, emissive: 0x94a3b8, emissiveIntensity: 0.4, metalness: 0.95 })
+                );
+                tip.rotation.x = -Math.PI / 2;
+                tip.position.z = -1.25;
+                group.add(tip);
+            } else if (weaponType === 'crossbow') {
+                const stock = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.06, 0.08, 0.58),
+                    new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.65 })
+                );
+                stock.position.z = -0.22;
+                group.add(stock);
+
+                const bowLimb = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.64, 0.03, 0.05),
+                    new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x059669, emissiveIntensity: 0.5, metalness: 0.7 })
+                );
+                bowLimb.position.z = -0.46;
+                group.add(bowLimb);
+
+                const bolt = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.01, 0.01, 0.42, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xeab308, emissiveIntensity: 0.8 })
+                );
+                bolt.rotation.x = Math.PI / 2;
+                bolt.position.set(0, 0.045, -0.32);
+                group.add(bolt);
+            } else if (weaponType === 'shotgun') {
+                const stock = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.065, 0.11, 0.28),
+                    new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.65 })
+                );
+                stock.position.set(0, -0.02, -0.08);
+                group.add(stock);
+
+                const barrelL = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.022, 0.022, 0.62, 10),
+                    new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.88 })
+                );
+                barrelL.rotation.x = Math.PI / 2;
+                barrelL.position.set(-0.022, 0.02, -0.44);
+                group.add(barrelL);
+
+                const barrelR = barrelL.clone();
+                barrelR.position.x = 0.022;
+                group.add(barrelR);
+
+                const pump = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.075, 0.065, 0.22),
+                    new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4 })
+                );
+                pump.position.set(0, -0.01, -0.42);
+                group.add(pump);
+            }
+            return group;
+        }
+
+        function createFullBodyCharacter(charId = 'umar', displayName = 'Pemain', slotIdx = 0, bodyTierIdx = 0, outfitLvl = 1) {
+            const outfit = PLAYER_SLOT_OUTFITS[slotIdx % PLAYER_SLOT_OUTFITS.length];
+            const tier = BODY_TIERS[bodyTierIdx] || BODY_TIERS[0];
+            const root = new THREE.Group();
+
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xe0ac69, roughness: 0.6 });
+            const coatMat = new THREE.MeshStandardMaterial({ color: outfit.coatColor, roughness: 0.5 });
+            const pantsMat = new THREE.MeshStandardMaterial({ color: outfit.pantsColor, roughness: 0.75 });
+            const bootMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.5 });
+            const hairMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.85 });
+
+            const bodyContainer = new THREE.Group();
+            bodyContainer.scale.set(tier.widthScale, tier.heightScale, tier.widthScale);
+            root.add(bodyContainer);
+
+            const upperBody = new THREE.Group();
+            upperBody.position.y = 0.85;
+            bodyContainer.add(upperBody);
+
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.62, 0.26), coatMat);
+            torso.position.y = 0.31;
+            torso.castShadow = true;
+            upperBody.add(torso);
+
+            const shoulderArmorMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.3 });
+            const leftPauldron = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.30), shoulderArmorMat);
+            leftPauldron.position.set(-0.28, 0.58, 0);
+            leftPauldron.visible = outfitLvl >= 2;
+            upperBody.add(leftPauldron);
+
+            const rightPauldron = leftPauldron.clone();
+            rightPauldron.position.x = 0.28;
+            rightPauldron.visible = outfitLvl >= 2;
+            upperBody.add(rightPauldron);
+
+            const backpack = new THREE.Mesh(
+                new THREE.BoxGeometry(0.34, 0.42, 0.16),
+                new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.75 })
+            );
+            backpack.position.set(0, 0.33, 0.19);
+            upperBody.add(backpack);
+
+            const headGroup = new THREE.Group();
+            headGroup.position.y = 0.78;
+            upperBody.add(headGroup);
+
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.30, 0.28), skinMat);
+            head.castShadow = true;
+            headGroup.add(head);
+
+            const hair = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.12, 0.30), hairMat);
+            hair.position.y = 0.12;
+            headGroup.add(hair);
+
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+            const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.02), eyeMat);
+            eyeL.position.set(-0.06, 0.02, -0.145);
+            const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.02), eyeMat);
+            eyeR.position.set(0.06, 0.02, -0.145);
+            headGroup.add(eyeL, eyeR);
+
+            // Tangan Kiri (Lampu Suluh)
+            const leftArmPivot = new THREE.Group();
+            leftArmPivot.position.set(-0.30, 0.56, 0);
+            upperBody.add(leftArmPivot);
+
+            const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.52, 0.13), coatMat);
+            leftArm.position.y = -0.22;
+            leftArmPivot.add(leftArm);
+
+            const leftHand = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.11, 0.11), skinMat);
+            leftHand.position.y = -0.50;
+            leftArmPivot.add(leftHand);
+
+            const torchBody = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.035, 0.045, 0.22, 12),
+                new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.7 })
+            );
+            torchBody.rotation.x = Math.PI / 2;
+            torchBody.position.set(0, -0.50, -0.12);
+            leftArmPivot.add(torchBody);
+
+            // Tangan Kanan (Senjata)
+            const rightArmPivot = new THREE.Group();
+            rightArmPivot.position.set(0.30, 0.56, 0);
+            upperBody.add(rightArmPivot);
+
+            const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.52, 0.13), coatMat);
+            rightArm.position.y = -0.22;
+            rightArmPivot.add(rightArm);
+
+            const rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.11, 0.11), skinMat);
+            rightHand.position.y = -0.50;
+            rightArmPivot.add(rightHand);
+
+            const weaponHolder = new THREE.Group();
+            weaponHolder.position.set(0, -0.50, -0.10);
+            rightArmPivot.add(weaponHolder);
+
+            // Kaki Kiri & Kanan
+            const leftLegPivot = new THREE.Group();
+            leftLegPivot.position.set(-0.13, 0.85, 0);
+            bodyContainer.add(leftLegPivot);
+
+            const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.72, 0.18), pantsMat);
+            leftLeg.position.y = -0.36;
+            leftLeg.castShadow = true;
+            leftLegPivot.add(leftLeg);
+
+            const leftBoot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.26), bootMat);
+            leftBoot.position.set(0, -0.78, -0.03);
+            leftLegPivot.add(leftBoot);
+
+            const rightLegPivot = new THREE.Group();
+            rightLegPivot.position.set(0.13, 0.85, 0);
+            bodyContainer.add(rightLegPivot);
+
+            const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.72, 0.18), pantsMat);
+            rightLeg.position.y = -0.36;
+            rightLeg.castShadow = true;
+            rightLegPivot.add(rightLeg);
+
+            const rightBoot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.26), bootMat);
+            rightBoot.position.set(0, -0.78, -0.03);
+            rightLegPivot.add(rightBoot);
+
+            // Tanda Nama Terapung di atas kepala
+            const charInfo = CHARACTERS[charId] || CHARACTERS.umar;
+            const nameSprite = createFloatingNameTag(`${charInfo.icon} ${displayName}`, outfit.badgeHex, `Baju ${outfit.label} • ${tier.label}`);
+            nameSprite.position.y = 2.15 * tier.heightScale;
+            root.add(nameSprite);
+
+            // Aura cahaya lembut pada setiap peserta supaya badan peserta tetap jelas kelihatan walaupun lorong gelap
+            const personalAuraLight = new THREE.PointLight(0xe2e8f0, 1.35, 9.5);
+            personalAuraLight.position.set(0, 2.0, 0.45);
+            root.add(personalAuraLight);
+
+            return {
+                root, bodyContainer, upperBody, headGroup,
+                leftArmPivot, rightArmPivot,
+                leftLegPivot, rightLegPivot,
+                weaponHolder, coatMat, pantsMat,
+                leftPauldron, rightPauldron, nameSprite,
+                badgeHex: outfit.badgeHex,
+                attackSwing: 0
+            };
+        }
+
+        function updateCharacterWeaponMesh(rig, weaponType) {
+            while (rig.weaponHolder.children.length > 0) {
+                rig.weaponHolder.remove(rig.weaponHolder.children[0]);
+            }
+            const wModel = buildRealisticWeapon3D(weaponType);
+            rig.weaponHolder.add(wModel);
+        }
+
+        function refreshRigAppearance(rig, nameText, charId, slotIdx, bodyTierIdx, outfitLvl) {
+            const outfit = PLAYER_SLOT_OUTFITS[slotIdx % PLAYER_SLOT_OUTFITS.length];
+            const tier = BODY_TIERS[bodyTierIdx] || BODY_TIERS[0];
+            const charInfo = CHARACTERS[charId] || CHARACTERS.umar;
+
+            rig.coatMat.color.setHex(outfit.coatColor);
+            rig.pantsMat.color.setHex(outfit.pantsColor);
+            rig.bodyContainer.scale.set(tier.widthScale, tier.heightScale, tier.widthScale);
+            rig.leftPauldron.visible = outfitLvl >= 2;
+            rig.rightPauldron.visible = outfitLvl >= 2;
+
+            rig.root.remove(rig.nameSprite);
+            rig.nameSprite = createFloatingNameTag(`${charInfo.icon} ${nameText}`, outfit.badgeHex, `Baju ${outfit.label} • ${tier.label}`);
+            rig.nameSprite.position.y = 2.15 * tier.heightScale;
+            rig.root.add(rig.nameSprite);
+        }
+
+        function animateCharacterRig(rig, dt, elapsed, isMoving, isSprinting, isCrouching, flashlightOn) {
+            const targetUpperY = isCrouching ? 0.58 : 0.85;
+            rig.upperBody.position.y += (targetUpperY - rig.upperBody.position.y) * Math.min(1, dt * 12);
+            rig.upperBody.rotation.x = isCrouching ? 0.35 : 0;
+
+            if (isMoving) {
+                const freq = isSprinting ? 14 : 9;
+                const amp = isSprinting ? 0.75 : 0.48;
+                const swing = Math.sin(elapsed * freq) * amp;
+
+                rig.leftLegPivot.rotation.x = swing;
+                rig.rightLegPivot.rotation.x = -swing;
+                rig.rightArmPivot.rotation.x = rig.attackSwing > 0 ? -1.4 : (0.25 + swing * 0.6);
+            } else {
+                rig.leftLegPivot.rotation.x *= 0.82;
+                rig.rightLegPivot.rotation.x *= 0.82;
+                rig.rightArmPivot.rotation.x = rig.attackSwing > 0 ? -1.4 : (0.15 + Math.sin(elapsed * 2) * 0.04);
+            }
+
+            const targetLeftArmX = flashlightOn ? 1.15 : (isMoving ? -Math.sin(elapsed * (isSprinting ? 14 : 9)) * 0.45 : 0);
+            rig.leftArmPivot.rotation.x += (targetLeftArmX - rig.leftArmPivot.rotation.x) * Math.min(1, dt * 12);
+
+            if (rig.attackSwing > 0) {
+                rig.attackSwing = Math.max(0, rig.attackSwing - dt * 4.5);
+            }
+        }
+
+        const playerPos = new THREE.Vector3();
+        const playerRig = createFullBodyCharacter('umar', 'Umar', 0, state.upgrades.body, state.upgrades.outfit);
+        scene.add(playerRig.root);
+
+        // Lampu Suluh Utama (Suluhan jelas ke hadapan dalam gelap)
+        const flashlight = new THREE.SpotLight(0xfffbeb, 4.8, 30, Math.PI / 4.0, 0.50, 1.15);
+        flashlight.position.set(-0.30, 1.45, -0.25);
+        playerRig.root.add(flashlight);
+        playerRig.root.add(flashlight.target);
+        flashlight.target.position.set(-0.30, 1.25, -5.0);
+
+        scene.add(camera);
+
+        // ==========================================
+        // 5. PEMBINAAN RUMAH AGAM + CAHAYA TANGGUNG SAMAR
+        // ==========================================
+        const textures = createProceduralTextures();
+        const wallBoxes = [], lockers = [], weaponPickups = [], diamondPickups = [], spiritApparitions = [];
+        let keyMesh = null, keyLight = null, exitDoorMesh = null, ghost = null, nearbyInteractable = null;
+
+        function createMansionProps(x, z, variant) {
+            const propGroup = new THREE.Group();
+            propGroup.position.set(x, 0, z);
+
+            const woodMat = new THREE.MeshStandardMaterial({ color: 0x3b1704, roughness: 0.65 });
+            const goldMat = new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.75, roughness: 0.3 });
+
+            if (variant % 3 === 0) {
+                const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 0.9), woodMat);
+                tableTop.position.y = 0.85;
+                propGroup.add(tableTop);
+
+                [[-0.65, -0.35], [0.65, -0.35], [-0.65, 0.35], [0.65, 0.35]].forEach(([lx, lz]) => {
+                    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.85, 0.1), woodMat);
+                    leg.position.set(lx, 0.425, lz);
+                    propGroup.add(leg);
+                });
+
+                const candle = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.04, 0.04, 0.24, 10),
+                    new THREE.MeshStandardMaterial({ color: 0xfef3c7 })
+                );
+                candle.position.set(0, 1.02, 0);
+                propGroup.add(candle);
+
+                const flame = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.04, 8, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xf59e0b })
+                );
+                flame.position.set(0, 1.18, 0);
+                propGroup.add(flame);
+            } else if (variant % 3 === 1) {
+                const clockBody = new THREE.Mesh(new THREE.BoxGeometry(0.75, 2.75, 0.55), woodMat);
+                clockBody.position.y = 1.375;
+                propGroup.add(clockBody);
+
+                const clockFace = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.24, 16),
+                    new THREE.MeshStandardMaterial({ color: 0xfef9c3, emissive: 0x713f12, emissiveIntensity: 0.25 })
+                );
+                clockFace.position.set(0, 2.25, 0.28);
+                propGroup.add(clockFace);
+
+                const trim = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.12, 0.62), goldMat);
+                trim.position.y = 2.75;
+                propGroup.add(trim);
+            } else {
+                const rug = new THREE.Mesh(
+                    new THREE.PlaneGeometry(3.2, 2.2),
+                    new THREE.MeshStandardMaterial({ color: 0x5c1414, roughness: 0.9 })
+                );
+                rug.rotation.x = -Math.PI / 2;
+                rug.position.y = 0.02;
+                propGroup.add(rug);
+
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.35, 0.95, 14), woodMat);
+                barrel.position.set(1.1, 0.475, -0.7);
+                propGroup.add(barrel);
+            }
+
+            scene.add(propGroup);
+        }
+
+        function spawnExtraSpiritApparitions(count = 3) {
+            const spiritTemplates = [
+                { name: 'Kelibat Pontianak', color: 0xec4899, robeColor: 0xe2e8f0, x: 15, z: 25, type: 'float' },
+                { name: 'Kelibat Pocong', color: 0xa855f7, robeColor: 0xf8fafc, x: 55, z: 20, type: 'hop' },
+                { name: 'Bayang Penunggu', color: 0x38bdf8, robeColor: 0x1e293b, x: 35, z: 60, type: 'float' },
+                { name: 'Langsuir Malam', color: 0xf43f5e, robeColor: 0x3f3f46, x: 25, z: 55, type: 'float' },
+                { name: 'Toyol Lorong', color: 0x10b981, robeColor: 0x065f46, x: 60, z: 45, type: 'hop' },
+                { name: 'Roh Bangsawan', color: 0xf59e0b, robeColor: 0x451a03, x: 45, z: 15, type: 'float' }
+            ];
+
+            for (let idx = 0; idx < count; idx++) {
+                const cfg = spiritTemplates[idx % spiritTemplates.length];
+                const group = new THREE.Group();
+                const robe = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.28, 0.55, 2.1, 14),
+                    new THREE.MeshStandardMaterial({
+                        color: cfg.robeColor,
+                        emissive: cfg.color,
+                        emissiveIntensity: 0.55,
+                        transparent: true,
+                        opacity: 0.72
+                    })
+                );
+                robe.position.y = 1.1;
+                group.add(robe);
+
+                const head = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.24, 14, 14),
+                    new THREE.MeshStandardMaterial({ color: cfg.robeColor, transparent: true, opacity: 0.78 })
+                );
+                head.position.y = 2.22;
+                group.add(head);
+
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
+                const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat);
+                e1.position.set(-0.08, 2.25, 0.2);
+                const e2 = e1.clone();
+                e2.position.x = 0.08;
+                group.add(e1, e2);
+
+                const tag = createFloatingNameTag(`👻 ${cfg.name}`, '#f472b6');
+                tag.position.y = 2.65;
+                group.add(tag);
+
+                const light = new THREE.PointLight(cfg.color, 1.35, 7.5);
+                light.position.y = 1.6;
+                group.add(light);
+
+                group.position.set(cfg.x, 0, cfg.z);
+                scene.add(group);
+
+                spiritApparitions.push({
+                    group,
+                    type: cfg.type,
+                    phase: idx * 1.7,
+                    speed: 2.4 + (state.level - 1) * 0.25,
+                    target: new THREE.Vector3(cfg.x + 10, 0, cfg.z + 5)
+                });
+            }
+        }
+
+        function updateExtraSpirits(dt, elapsed) {
+            spiritApparitions.forEach((sp) => {
+                if (sp.type === 'hop') {
+                    sp.group.position.y = Math.abs(Math.sin(elapsed * 4.5 + sp.phase)) * 0.45;
+                } else {
+                    sp.group.position.y = 0.15 + Math.sin(elapsed * 2.8 + sp.phase) * 0.22;
+                }
+
+                const toTarget = sp.target.clone().sub(sp.group.position);
+                toTarget.y = 0;
+                if (toTarget.length() < 1.2) {
+                    const r = 1 + Math.floor(Math.random() * (MAZE_GRID.length - 2));
+                    const c = 1 + Math.floor(Math.random() * (MAZE_GRID[0].length - 2));
+                    if (MAZE_GRID[r][c] !== 1) {
+                        sp.target.set(c * CELL_SIZE, 0, r * CELL_SIZE);
+                    }
+                } else {
+                    toTarget.normalize();
+                    const nextPos = sp.group.position.clone().addScaledVector(toTarget, sp.speed * dt);
+                    if (!checkWallCollision(nextPos, 0.4)) {
+                        sp.group.position.x = nextPos.x;
+                        sp.group.position.z = nextPos.z;
+                        sp.group.rotation.y = Math.atan2(toTarget.x, toTarget.z);
+                    } else {
+                        sp.target.set(
+                            (1 + Math.floor(Math.random() * 12)) * CELL_SIZE,
+                            0,
+                            (1 + Math.floor(Math.random() * 12)) * CELL_SIZE
+                        );
+                    }
+                }
+
+                const dist = sp.group.position.distanceTo(playerPos);
+                if (dist < 4.5) {
+                    audio.playHeartbeat(0.75);
+                }
+            });
+        }
+
+        function buildMansion(seedIndex = 0) {
+            const lvlCfg = getLevelConfig(state.level);
+            scene.fog = new THREE.FogExp2(0x07080e, lvlCfg.fogDensity);
+
+            const rows = MAZE_GRID.length, cols = MAZE_GRID[0].length;
+            const totalW = cols * CELL_SIZE, totalD = rows * CELL_SIZE;
+
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(totalW, totalD),
+                new THREE.MeshStandardMaterial({ map: textures.floorTex, roughness: 0.72 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(totalW / 2 - CELL_SIZE / 2, 0, totalD / 2 - CELL_SIZE / 2);
+            scene.add(floor);
+
+            const ceil = new THREE.Mesh(
+                new THREE.PlaneGeometry(totalW, totalD),
+                new THREE.MeshStandardMaterial({ color: 0x11131c })
+            );
+            ceil.rotation.x = Math.PI / 2;
+            ceil.position.set(totalW / 2 - CELL_SIZE / 2, WALL_HEIGHT, totalD / 2 - CELL_SIZE / 2);
+            scene.add(ceil);
+
+            const wallGeo = new THREE.BoxGeometry(CELL_SIZE, WALL_HEIGHT, CELL_SIZE);
+            const wallMat = new THREE.MeshStandardMaterial({ map: textures.wallTex, roughness: 0.78 });
+
+            const keyCandidates = [];
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (MAZE_GRID[r][c] === 4) keyCandidates.push({ r, c });
+                }
+            }
+            const chosenKey = keyCandidates[seedIndex % keyCandidates.length];
+            const weaponTypesCycle = ['keris', 'uv', 'spear', 'crossbow', 'shotgun'];
+            let wIdx = 0;
+            let propIdx = 0;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = MAZE_GRID[r][c];
+                    const x = c * CELL_SIZE, z = r * CELL_SIZE;
+
+                    if (cell === 1) {
+                        const wall = new THREE.Mesh(wallGeo, wallMat);
+                        wall.position.set(x, WALL_HEIGHT / 2, z);
+                        scene.add(wall);
+                        wallBoxes.push(new THREE.Box3().setFromObject(wall));
+
+                        if ((r * 7 + c * 3) % 11 === 0 && r > 0 && r < rows - 1 && MAZE_GRID[r + 1][c] !== 1) {
+                            const frame = new THREE.Mesh(
+                                new THREE.BoxGeometry(1.5, 1.9, 0.12),
+                                new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.8 })
+                            );
+                            frame.position.set(x, 2.3, z + CELL_SIZE / 2 + 0.05);
+                            scene.add(frame);
+
+                            const canvasArt = new THREE.Mesh(
+                                new THREE.PlaneGeometry(1.25, 1.65),
+                                new THREE.MeshStandardMaterial({ color: 0x260d24 })
+                            );
+                            canvasArt.position.set(x, 2.3, z + CELL_SIZE / 2 + 0.12);
+                            scene.add(canvasArt);
+                        }
+                    } else {
+                        // Cahaya tanglung siling malap (samar-samar) di simpang tertentu sahaja
+                        if ((r + c) % 4 === 0 || cell === 2 || cell === 5 || cell === 6) {
+                            const lanternBulb = new THREE.Mesh(
+                                new THREE.SphereGeometry(0.13, 10, 10),
+                                new THREE.MeshBasicMaterial({ color: 0xfcd34d })
+                            );
+                            lanternBulb.position.set(x, WALL_HEIGHT - 0.25, z);
+                            scene.add(lanternBulb);
+
+                            const dimCeilingLight = new THREE.PointLight(0xfde68a, 0.72, 13);
+                            dimCeilingLight.position.set(x, WALL_HEIGHT - 0.5, z);
+                            scene.add(dimCeilingLight);
+                        }
+
+                        if (cell === 2) {
+                            state.spawnPos.set(x, 0, z);
+                            playerPos.copy(state.spawnPos);
+                            playerRig.root.position.copy(playerPos);
+                        } else if (cell === 3) {
+                            const locker = new THREE.Mesh(
+                                new THREE.BoxGeometry(1.4, 2.7, 1.2),
+                                new THREE.MeshStandardMaterial({ color: 0x2d3b45, metalness: 0.5 })
+                            );
+                            locker.position.set(x, 1.35, z);
+                            scene.add(locker);
+                            lockers.push({ mesh: locker, position: new THREE.Vector3(x, 0, z) });
+                        } else if (cell === 4 && r === chosenKey.r && c === chosenKey.c) {
+                            keyMesh = new THREE.Mesh(
+                                new THREE.TorusGeometry(0.24, 0.07, 12, 24),
+                                new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xf59e0b, emissiveIntensity: 1.0 })
+                            );
+                            keyMesh.position.set(x, 1.25, z);
+                            scene.add(keyMesh);
+                            keyLight = new THREE.PointLight(0xffd700, 2.2, 9);
+                            keyLight.position.set(x, 1.7, z);
+                            scene.add(keyLight);
+                        } else if (cell === 5) {
+                            exitDoorMesh = new THREE.Mesh(
+                                new THREE.BoxGeometry(2.6, 3.6, 0.35),
+                                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x059669, emissiveIntensity: 0.65 })
+                            );
+                            exitDoorMesh.position.set(x, 1.8, z + 1.8);
+                            scene.add(exitDoorMesh);
+                        } else if (cell === 6) {
+                            state.ghostSpawnPos.set(x, 0, z);
+                        } else if (cell === 7) {
+                            const wType = weaponTypesCycle[wIdx % weaponTypesCycle.length];
+                            const wInfo = WEAPONS[wType];
+                            const itemGroup = buildRealisticWeapon3D(wType);
+                            itemGroup.scale.set(1.45, 1.45, 1.45);
+                            itemGroup.position.set(x, 1.05, z);
+                            scene.add(itemGroup);
+
+                            const pLight = new THREE.PointLight(wInfo.color, 1.65, 7.5);
+                            pLight.position.set(x, 1.3, z);
+                            scene.add(pLight);
+                            weaponPickups.push({ id: `wp_${r}_${c}`, type: wType, itemMesh: itemGroup, light: pLight, position: new THREE.Vector3(x, 0, z), active: true });
+                            wIdx++;
+                        } else if (cell === 8) {
+                            const diamondMesh = new THREE.Mesh(
+                                new THREE.OctahedronGeometry(0.26, 0),
+                                new THREE.MeshStandardMaterial({
+                                    color: 0x22d3ee,
+                                    emissive: 0x06b6d4,
+                                    emissiveIntensity: 0.9,
+                                    metalness: 0.3,
+                                    roughness: 0.1
+                                })
+                            );
+                            diamondMesh.position.set(x, 1.15, z);
+                            scene.add(diamondMesh);
+
+                            const dLight = new THREE.PointLight(0x22d3ee, 1.35, 6);
+                            dLight.position.set(x, 1.3, z);
+                            scene.add(dLight);
+
+                            diamondPickups.push({
+                                id: `dm_${r}_${c}`,
+                                mesh: diamondMesh,
+                                light: dLight,
+                                position: new THREE.Vector3(x, 0, z),
+                                active: true
+                            });
+                        } else if (cell === 9) {
+                            createMansionProps(x, z, propIdx++);
+                        }
+                    }
+                }
+            }
+
+            spawnExtraSpiritApparitions(lvlCfg.extraSpiritsCount);
+        }
+
+        function checkWallCollision(pos, radius = 0.45) {
+            const playerSphere = new THREE.Sphere(new THREE.Vector3(pos.x, 1.0, pos.z), radius);
+            for (const box of wallBoxes) {
+                if (box.intersectsSphere(playerSphere)) return true;
+            }
+            return false;
+        }
+
+        function showToast(msg) {
+            const el = document.getElementById('toast-msg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => el.classList.add('hidden'), 2600);
+        }
+
+        function updateLivesUI() {
+            document.getElementById('lives-display').textContent = state.lives > 0 ? '❤️'.repeat(state.lives) : '💀';
+        }
+
+        function updateDiamondsUI() {
+            localStorage.setItem('umar_horror_diamonds', String(state.diamonds));
+            localStorage.setItem('umar_horror_upgrades', JSON.stringify(state.upgrades));
+            localStorage.setItem('umar_horror_level', String(state.level));
+            document.getElementById('diamond-count-hud').textContent = state.diamonds;
+            document.getElementById('modal-diamond-count').textContent = state.diamonds;
+            document.getElementById('lobby-diamond-count').textContent = state.diamonds;
+        }
+
+        function updateGhostHpUI() {
+            const pct = Math.max(0, Math.min(100, (state.ghostHp / state.ghostMaxHp) * 100));
+            document.getElementById('ghost-hp-bar').style.width = `${pct}%`;
+            document.getElementById('ghost-hp-text').textContent = `${Math.round(state.ghostHp)}/${state.ghostMaxHp}`;
+        }
+
+        // ==========================================
+        // 6. SISTEM NAIK TARAF AKTOR (UPGRADE)
+        // ==========================================
+        function refreshUpgradeModalUI() {
+            updateDiamondsUI();
+            const u = state.upgrades;
+            const tier = BODY_TIERS[u.body] || BODY_TIERS[0];
+
+            document.getElementById('upg-outfit-lvl').textContent = `Tahap ${u.outfit}/4`;
+            document.getElementById('upg-outfit-desc').textContent = `Perisai ${(u.outfit - 1) * 15}%, Jarak Suluh +${(u.outfit - 1) * 4}m`;
+            const btnOutfit = document.getElementById('btn-upg-outfit');
+            btnOutfit.textContent = u.outfit >= 4 ? 'MAKSIMUM' : `Naik Taraf (${u.outfit * 2 + 1} 💎)`;
+            btnOutfit.disabled = u.outfit >= 4;
+
+            document.getElementById('upg-weapon-lvl').textContent = `Tahap ${u.weapon}/4`;
+            document.getElementById('upg-weapon-desc').textContent = `Kuasa Serangan +${(u.weapon - 1) * 25}%, Jarak +${(u.weapon - 1) * 15}%`;
+            const btnWeapon = document.getElementById('btn-upg-weapon');
+            btnWeapon.textContent = u.weapon >= 4 ? 'MAKSIMUM' : `Naik Taraf (${u.weapon * 2 + 1} 💎)`;
+            btnWeapon.disabled = u.weapon >= 4;
+
+            document.getElementById('upg-strength-lvl').textContent = `Tahap ${u.strength}/4`;
+            document.getElementById('upg-strength-desc').textContent = `Kelajuan +${(u.strength - 1) * 10}%, Stamina +${(u.strength - 1) * 20}%`;
+            const btnStrength = document.getElementById('btn-upg-strength');
+            btnStrength.textContent = u.strength >= 4 ? 'MAKSIMUM' : `Naik Taraf (${u.strength * 2 + 1} 💎)`;
+            btnStrength.disabled = u.strength >= 4;
+
+            document.getElementById('upg-body-lvl').textContent = tier.label;
+            document.getElementById('upg-body-desc').textContent = `Fizikal ${tier.label} (Maksimum Nyawa: ${3 + tier.bonusLives} ❤️)`;
+            const btnBody = document.getElementById('btn-upg-body');
+            btnBody.textContent = u.body >= 2 ? 'BADAN SASA MAKSIMUM' : `Tukar Badan (${(u.body + 1) * 4} 💎)`;
+            btnBody.disabled = u.body >= 2;
+        }
+
+        function applyUpgradesToActor() {
+            const charDef = CHARACTERS[state.selectedChar] || CHARACTERS.umar;
+            const tier = BODY_TIERS[state.upgrades.body] || BODY_TIERS[0];
+
+            flashlight.distance = charDef.lightRange + (state.upgrades.outfit - 1) * 4;
+            state.maxLives = 3 + tier.bonusLives;
+            if (state.lives < state.maxLives && state.lives > 0) {
+                state.lives = state.maxLives;
+                updateLivesUI();
+            }
+
+            refreshRigAppearance(playerRig, state.playerName, state.selectedChar, state.slotIndex, state.upgrades.body, state.upgrades.outfit);
+            refreshUpgradeModalUI();
+            syncStateToFirebase(true);
+        }
+
+        function openUpgradeModal() {
+            refreshUpgradeModalUI();
+            document.getElementById('upgrade-modal').classList.remove('hidden');
+            if (document.pointerLockElement === canvas) document.exitPointerLock?.();
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgrade-modal').classList.add('hidden');
+            if (state.isPlaying && !('ontouchstart' in window)) canvas.requestPointerLock?.();
+        }
+
+        document.getElementById('btn-upg-outfit').addEventListener('click', () => {
+            const cost = state.upgrades.outfit * 2 + 1;
+            if (state.upgrades.outfit >= 4) return;
+            if (state.diamonds < cost) return showToast(`Berlian tidak cukup! Perlukan ${cost} 💎`);
+            state.diamonds -= cost;
+            state.upgrades.outfit++;
+            audio.playDiamondChime();
+            applyUpgradesToActor();
+            showToast(`🧥 Pakaian dinaik taraf ke Tahap ${state.upgrades.outfit}!`);
+        });
+
+        document.getElementById('btn-upg-weapon').addEventListener('click', () => {
+            const cost = state.upgrades.weapon * 2 + 1;
+            if (state.upgrades.weapon >= 4) return;
+            if (state.diamonds < cost) return showToast(`Berlian tidak cukup! Perlukan ${cost} 💎`);
+            state.diamonds -= cost;
+            state.upgrades.weapon++;
+            audio.playDiamondChime();
+            applyUpgradesToActor();
+            showToast(`⚔️ Tempaan Senjata dinaik taraf ke Tahap ${state.upgrades.weapon}!`);
+        });
+
+        document.getElementById('btn-upg-strength').addEventListener('click', () => {
+            const cost = state.upgrades.strength * 2 + 1;
+            if (state.upgrades.strength >= 4) return;
+            if (state.diamonds < cost) return showToast(`Berlian tidak cukup! Perlukan ${cost} 💎`);
+            state.diamonds -= cost;
+            state.upgrades.strength++;
+            audio.playDiamondChime();
+            applyUpgradesToActor();
+            showToast(`⚡ Kekuatan & Larian dinaik taraf ke Tahap ${state.upgrades.strength}!`);
+        });
+
+        document.getElementById('btn-upg-body').addEventListener('click', () => {
+            const cost = (state.upgrades.body + 1) * 4;
+            if (state.upgrades.body >= 2) return;
+            if (state.diamonds < cost) return showToast(`Berlian tidak cukup! Perlukan ${cost} 💎`);
+            state.diamonds -= cost;
+            state.upgrades.body++;
+            audio.playDiamondChime();
+            applyUpgradesToActor();
+            const tier = BODY_TIERS[state.upgrades.body];
+            showToast(`💪 Fizikal bertukar kepada ${tier.label} (+Nyawa Maksimum)!`);
+        });
+
+        document.getElementById('hud-upgrade-btn').addEventListener('click', openUpgradeModal);
+        document.getElementById('lobby-upgrade-btn').addEventListener('click', openUpgradeModal);
+        document.getElementById('btn-upgrade').addEventListener('touchstart', (e) => { e.preventDefault(); openUpgradeModal(); });
+        document.getElementById('close-upgrade-btn').addEventListener('click', closeUpgradeModal);
+
+        // ==========================================
+        // 7. ENTITI HANTU UTAMA (BERSKALA MENGIKUT LEVEL)
+        // ==========================================
+        class GhostEntity {
+            constructor() {
+                const lvlCfg = getLevelConfig(state.level);
+                state.ghostMaxHp = lvlCfg.ghostMaxHp;
+                state.ghostHp = lvlCfg.ghostMaxHp;
+                updateGhostHpUI();
+
+                this.group = new THREE.Group();
+                const body = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.65, 2.3, 16),
+                    new THREE.MeshStandardMaterial({ color: 0x1e1b2e, emissive: 0x6b21a8, emissiveIntensity: 0.9, transparent: true, opacity: 0.92 })
+                );
+                body.position.y = 1.25;
+                this.group.add(body);
+
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff2222 });
+                const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), eyeMat);
+                leftEye.position.set(-0.16, 1.85, -0.32);
+                const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), eyeMat);
+                rightEye.position.set(0.16, 1.85, -0.32);
+                this.group.add(leftEye, rightEye);
+
+                const tag = createFloatingNameTag(`👹 PENUNGGU LVL ${state.level}`, '#ef4444');
+                tag.position.y = 2.65;
+                this.group.add(tag);
+
+                const aura = new THREE.PointLight(0xef4444, 2.4, 11);
+                aura.position.y = 1.6;
+                this.group.add(aura);
+
+                this.group.position.copy(state.ghostSpawnPos);
+                scene.add(this.group);
+                this.state = 'PATROL';
+                this.patrolTarget = this.pickRandomCorridor();
+            }
+
+            pickRandomCorridor() {
+                for (let tries = 0; tries < 40; tries++) {
+                    const r = 1 + Math.floor(Math.random() * (MAZE_GRID.length - 2));
+                    const c = 1 + Math.floor(Math.random() * (MAZE_GRID[0].length - 2));
+                    if (MAZE_GRID[r][c] === 0) return new THREE.Vector3(c * CELL_SIZE, 0, r * CELL_SIZE);
+                }
+                return state.ghostSpawnPos.clone();
+            }
+
+            update(dt, elapsed, targetPlayerPos) {
+                const lvlCfg = getLevelConfig(state.level);
+                this.group.position.y = Math.sin(elapsed * 3.5) * 0.14;
+                if (!state.isHost && !state.isBotMode) return;
+
+                if (state.ghostStunTimer > 0) {
+                    state.ghostStunTimer -= dt;
+                    document.getElementById('ghost-state-label').textContent = '💫 Roh Terpegun!';
+                    return;
+                }
+
+                const distToPlayer = this.group.position.distanceTo(new THREE.Vector3(targetPlayerPos.x, 0, targetPlayerPos.z));
+                const charDef = CHARACTERS[state.selectedChar] || CHARACTERS.umar;
+                const detectRange = ((state.flashlightOn ? 14 : 8) + lvlCfg.detectBonus) * charDef.stealthMult;
+
+                const warnEl = document.getElementById('ghost-warning');
+                const vigEl = document.getElementById('vignette');
+
+                if (distToPlayer < 13.5) {
+                    warnEl.classList.remove('hidden');
+                    vigEl.classList.add('danger-vignette');
+                    audio.playHeartbeat(Math.max(0.2, 1 - distToPlayer / 13.5));
+                } else {
+                    warnEl.classList.add('hidden');
+                    vigEl.classList.remove('danger-vignette');
+                }
+
+                if (!state.isHiding && state.lives > 0 && distToPlayer < detectRange) {
+                    this.state = 'CHASE';
+                    document.getElementById('ghost-state-label').textContent = `🔥 ROH MENGEJAR (LVL ${state.level})!`;
+                    const dir = new THREE.Vector3(targetPlayerPos.x - this.group.position.x, 0, targetPlayerPos.z - this.group.position.z).normalize();
+                    const nextPos = this.group.position.clone().addScaledVector(dir, lvlCfg.ghostChaseSpeed * dt);
+                    if (!checkWallCollision(nextPos, 0.45)) this.group.position.copy(nextPos);
+                    this.group.rotation.y = Math.atan2(-dir.x, -dir.z);
+
+                    if (distToPlayer < 1.35 && state.invulnerableTimer <= 0) {
+                        this.hitPlayer();
+                    }
+                } else {
+                    this.state = 'PATROL';
+                    document.getElementById('ghost-state-label').textContent = `👻 Roh Meronda (LVL ${state.level})`;
+                    const toTarget = this.patrolTarget.clone().sub(this.group.position);
+                    if (toTarget.length() < 1.0) {
+                        this.patrolTarget = this.pickRandomCorridor();
+                    } else {
+                        toTarget.normalize();
+                        const nextPos = this.group.position.clone().addScaledVector(toTarget, lvlCfg.ghostPatrolSpeed * dt);
+                        if (!checkWallCollision(nextPos, 0.45)) {
+                            this.group.position.copy(nextPos);
+                        } else {
+                            this.patrolTarget = this.pickRandomCorridor();
+                        }
+                        this.group.rotation.y = Math.atan2(-toTarget.x, -toTarget.z);
+                    }
+                }
+            }
+
+            hitPlayer() {
+                const blockChance = (state.upgrades.outfit - 1) * 0.15;
+                if (Math.random() < blockChance) {
+                    state.invulnerableTimer = 2.5;
+                    showToast('🛡️ Perisai Pakaian anda menangkis serangan hantu!');
+                    return;
+                }
+
+                state.lives = Math.max(0, state.lives - 1);
+                state.invulnerableTimer = 3.0;
+                updateLivesUI();
+                audio.playGhostScream();
+
+                const flash = document.getElementById('jumpscare-flash');
+                flash.classList.remove('hidden');
+                document.body.classList.add('shake-screen');
+                setTimeout(() => {
+                    flash.classList.add('hidden');
+                    document.body.classList.remove('shake-screen');
+                }, 650);
+
+                if (state.lives <= 0) {
+                    document.getElementById('spectator-banner').classList.remove('hidden');
+                    const anyAlive = Object.values(state.roomPlayers).some(p => p.uid !== currentUserId && p.lives > 0);
+                    if (!anyAlive) endGame(false);
+                } else {
+                    this.group.position.copy(state.ghostSpawnPos);
+                    showToast(`Anda diserang! Baki nyawa: ${state.lives}`);
+                }
+            }
+        }
+
+        function damageGhost(amount, message) {
+            if (!ghost) return;
+            const lvlCfg = getLevelConfig(state.level);
+            state.ghostHp = Math.max(0, state.ghostHp - amount);
+            state.ghostStunTimer = lvlCfg.stunDuration;
+            updateGhostHpUI();
+            showToast(message);
+
+            if (state.ghostHp <= 0) {
+                state.ghostHp = state.ghostMaxHp;
+                state.ghostStunTimer = 5.5;
+                const bonusDiamonds = 2 + state.level;
+                state.diamonds += bonusDiamonds;
+                updateDiamondsUI();
+                ghost.group.position.copy(state.ghostSpawnPos);
+                updateGhostHpUI();
+                showToast(`⚡ Roh jahat diusir! Ganjaran +${bonusDiamonds} 💎 Berlian!`);
+            }
+        }
+
+        // ==========================================
+        // 8. KAWALAN PEMAIN & KAMERA ORANG KETIGA
+        // ==========================================
+        const keys = {};
+        let yaw = 0, pitch = 0.22;
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (!state.isPlaying) return;
+            if (e.code === 'KeyF') toggleFlashlight();
+            if (e.code === 'KeyC') toggleCrouch();
+            if (e.code === 'KeyE') triggerInteract();
+            if (e.code === 'KeyV') toggleCameraView();
+            if (e.code === 'KeyU') {
+                const modal = document.getElementById('upgrade-modal');
+                modal.classList.contains('hidden') ? openUpgradeModal() : closeUpgradeModal();
+            }
+        });
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === canvas && state.isPlaying && !state.isHiding) {
+                yaw -= e.movementX * 0.0024;
+                pitch = Math.max(-0.25, Math.min(0.85, pitch + e.movementY * 0.0022));
+            }
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            if (!state.isPlaying || !document.getElementById('upgrade-modal').classList.contains('hidden')) return;
+            if (document.pointerLockElement !== canvas && !('ontouchstart' in window)) {
+                canvas.requestPointerLock?.();
+                return;
+            }
+            if (e.button === 0) performAttack();
+        });
+
+        let lastTouchX = null, lastTouchY = null;
+        const lookZone = document.getElementById('touch-look-zone');
+        lookZone.addEventListener('touchstart', (e) => {
+            const t = e.touches[0];
+            lastTouchX = t.clientX;
+            lastTouchY = t.clientY;
+        }, { passive: true });
+        lookZone.addEventListener('touchmove', (e) => {
+            if (!state.isPlaying || state.isHiding || lastTouchX === null) return;
+            const t = e.touches[0];
+            yaw -= (t.clientX - lastTouchX) * 0.0058;
+            pitch = Math.max(-0.2, Math.min(0.85, pitch + (t.clientY - lastTouchY) * 0.0045));
+            lastTouchX = t.clientX;
+            lastTouchY = t.clientY;
+        }, { passive: true });
+        lookZone.addEventListener('touchend', () => { lastTouchX = null; lastTouchY = null; });
+
+        function bindHoldButton(id, keyCode) {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyCode] = true; btn.classList.add('active-touch'); });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyCode] = false; btn.classList.remove('active-touch'); });
+        }
+        bindHoldButton('btn-up', 'KeyW');
+        bindHoldButton('btn-down', 'KeyS');
+        bindHoldButton('btn-left', 'KeyA');
+        bindHoldButton('btn-right', 'KeyD');
+        bindHoldButton('btn-sprint', 'ShiftLeft');
+
+        document.getElementById('btn-cam')?.addEventListener('touchstart', (e) => { e.preventDefault(); toggleCameraView(); });
+        document.getElementById('btn-flashlight')?.addEventListener('touchstart', (e) => { e.preventDefault(); toggleFlashlight(); });
+        document.getElementById('btn-crouch')?.addEventListener('touchstart', (e) => { e.preventDefault(); toggleCrouch(); });
+        document.getElementById('btn-attack')?.addEventListener('touchstart', (e) => { e.preventDefault(); performAttack(); });
+        document.getElementById('btn-interact')?.addEventListener('touchstart', (e) => { e.preventDefault(); triggerInteract(); });
+
+        function toggleCameraView() {
+            state.cameraViewMode = state.cameraViewMode === 'full' ? 'close' : 'full';
+            const label = document.getElementById('camera-mode-label');
+            if (label) {
+                label.textContent = state.cameraViewMode === 'full' ? '3RD PERSON: PENUH' : '3RD PERSON: DEKAT';
+            }
+            showToast(state.cameraViewMode === 'full' ? '📷 Paparan Badan Penuh' : '📷 Paparan Bahu Dekat');
+        }
+
+        function toggleFlashlight() {
+            state.flashlightOn = !state.flashlightOn;
+            flashlight.intensity = state.flashlightOn ? 4.8 : 0;
+            document.getElementById('flashlight-status').innerHTML = state.flashlightOn
+                ? `<span class="text-yellow-400">🔦</span> <span class="text-gray-200">ON</span>`
+                : `<span class="text-gray-500">🔦</span> <span class="text-gray-500">OFF</span>`;
+        }
+
+        function toggleCrouch() {
+            if (!state.isHiding) state.isCrouching = !state.isCrouching;
+        }
+
+        function performAttack() {
+            if (state.attackCooldown > 0 || state.isHiding || state.lives <= 0) return;
+            const wInfo = WEAPONS[state.weapon];
+            const charDef = CHARACTERS[state.selectedChar] || CHARACTERS.umar;
+            const weaponDmgMult = 1 + (state.upgrades.weapon - 1) * 0.25;
+            const weaponRangeMult = 1 + (state.upgrades.weapon - 1) * 0.15;
+
+            state.attackCooldown = wInfo.cooldown;
+            audio.playWeaponAttack(state.weapon);
+
+            playerRig.attackSwing = 1.0;
+
+            if (ghost) {
+                const dist = playerPos.distanceTo(new THREE.Vector3(ghost.group.position.x, 0, ghost.group.position.z));
+                if (dist <= wInfo.range * weaponRangeMult) {
+                    const dmg = Math.round(wInfo.damage * charDef.damageMult * weaponDmgMult);
+                    damageGhost(dmg, `⚔️ Serangan ${wInfo.name} mengenai roh (-${dmg} HP)!`);
+                }
+            }
+        }
+
+        function checkNearbyInteractables() {
+            for (const dm of diamondPickups) {
+                if (dm.active && playerPos.distanceTo(dm.position) < 1.75) {
+                    dm.active = false;
+                    dm.mesh.visible = false;
+                    dm.light.intensity = 0;
+                    state.diamonds += 1;
+                    audio.playDiamondChime();
+                    updateDiamondsUI();
+                    showToast(`💎 +1 Berlian dikutip! (Jumlah: ${state.diamonds} 💎)`);
+                }
+            }
+
+            const promptEl = document.getElementById('interact-prompt');
+            const textEl = document.getElementById('interact-text');
+            const crossEl = document.getElementById('crosshair');
+            nearbyInteractable = null;
+
+            if (state.isHiding) {
+                promptEl.classList.remove('hidden');
+                textEl.textContent = 'Tekan [E] / AMBIL untuk keluar dari almari';
+                return;
+            }
+
+            if (keyMesh && playerPos.distanceTo(new THREE.Vector3(keyMesh.position.x, 0, keyMesh.position.z)) < 2.5) {
+                nearbyInteractable = { type: 'key' };
+                promptEl.classList.remove('hidden');
+                textEl.textContent = '🗝️ Ambil Kunci Emas';
+                crossEl.classList.add('interactable');
+                return;
+            }
+
+            for (const wp of weaponPickups) {
+                if (wp.active && playerPos.distanceTo(wp.position) < 2.4) {
+                    nearbyInteractable = { type: 'weapon', weapon: wp };
+                    promptEl.classList.remove('hidden');
+                    textEl.textContent = `${WEAPONS[wp.type].icon} Ambil ${WEAPONS[wp.type].name}`;
+                    crossEl.classList.add('interactable');
+                    return;
+                }
+            }
+
+            for (const lk of lockers) {
+                if (playerPos.distanceTo(lk.position) < 2.3) {
+                    nearbyInteractable = { type: 'locker', locker: lk };
+                    promptEl.classList.remove('hidden');
+                    textEl.textContent = '🚪 Menyorok di dalam Almari';
+                    crossEl.classList.add('interactable');
+                    return;
+                }
+            }
+
+            if (exitDoorMesh && playerPos.distanceTo(new THREE.Vector3(exitDoorMesh.position.x, 0, exitDoorMesh.position.z)) < 3.0) {
+                nearbyInteractable = { type: 'exit' };
+                promptEl.classList.remove('hidden');
+                textEl.textContent = state.hasKey ? `🚪 BUKA PINTU KELUAR (TAHAP ${state.level})!` : '🔒 Pintu Berkunci (Cari Kunci Emas)';
+                crossEl.classList.add('interactable');
+                return;
+            }
+
+            promptEl.classList.add('hidden');
+            crossEl.classList.remove('interactable');
+        }
+
+        function triggerInteract() {
+            if (state.isHiding) {
+                state.isHiding = false;
+                playerRig.root.visible = true;
+                document.getElementById('locker-overlay').classList.add('hidden');
+                document.getElementById('hiding-indicator').classList.add('hidden');
+                return;
+            }
+            if (!nearbyInteractable) return;
+
+            if (nearbyInteractable.type === 'key') {
+                state.hasKey = true;
+                scene.remove(keyMesh);
+                scene.remove(keyLight);
+                keyMesh = null;
+                audio.playKeyPickup();
+                document.getElementById('key-status').innerHTML = `<span>🗝️</span> <span class="text-yellow-400">Ada!</span>`;
+                showToast('Kunci Emas dijumpai! Cari Pintu Keluar!');
+                syncStateToFirebase(true);
+            } else if (nearbyInteractable.type === 'weapon') {
+                const wp = nearbyInteractable.weapon;
+                wp.active = false;
+                wp.itemMesh.visible = false;
+                wp.light.intensity = 0;
+                state.weapon = wp.type;
+                updateCharacterWeaponMesh(playerRig, wp.type);
+                const wInfo = WEAPONS[wp.type];
+                document.getElementById('weapon-status').innerHTML = `<span>${wInfo.icon}</span> <span>${wInfo.name}</span>`;
+                showToast(`Senjata diperoleh: ${wInfo.name}`);
+                syncStateToFirebase(true);
+            } else if (nearbyInteractable.type === 'locker') {
+                state.isHiding = true;
+                playerRig.root.visible = false;
+                document.getElementById('locker-overlay').classList.remove('hidden');
+                document.getElementById('hiding-indicator').classList.remove('hidden');
+            } else if (nearbyInteractable.type === 'exit') {
+                if (state.hasKey) {
+                    audio.playVictory();
+                    endGame(true);
+                } else {
+                    showToast('Pintu berkunci rapat! Perlukan Kunci Emas.');
+                }
+            }
+        }
+
+        function updateThirdPersonCamera() {
+            if (state.isHiding) {
+                camera.position.set(playerPos.x, 1.55, playerPos.z);
+                camera.rotation.y = yaw;
+                camera.rotation.x = 0;
+                return;
+            }
+
+            const desiredDist = state.cameraViewMode === 'full' ? 3.65 : 2.15;
+            const shoulderHeight = state.isCrouching ? 1.15 : 1.55;
+            const pivot = new THREE.Vector3(playerPos.x, shoulderHeight, playerPos.z);
+
+            const camOffset = new THREE.Vector3(
+                Math.sin(yaw) * Math.cos(pitch),
+                Math.sin(pitch) + 0.22,
+                Math.cos(yaw) * Math.cos(pitch)
+            ).normalize();
+
+            let safeDist = desiredDist;
+            for (let d = 0.5; d <= desiredDist; d += 0.25) {
+                const testPos = pivot.clone().addScaledVector(camOffset, d);
+                if (checkWallCollision(testPos, 0.35)) {
+                    safeDist = Math.max(0.55, d - 0.3);
+                    break;
+                }
+            }
+
+            const finalCamPos = pivot.clone().addScaledVector(camOffset, safeDist);
+            finalCamPos.y = Math.max(0.55, Math.min(WALL_HEIGHT - 0.35, finalCamPos.y));
+
+            camera.position.copy(finalCamPos);
+            const lookTarget = new THREE.Vector3(playerPos.x, state.isCrouching ? 0.95 : 1.32, playerPos.z);
+            camera.lookAt(lookTarget);
+        }
+
+        function updatePlayer(dt, elapsed) {
+            if (state.invulnerableTimer > 0) state.invulnerableTimer -= dt;
+            if (state.attackCooldown > 0) state.attackCooldown -= dt;
+
+            if (state.isHiding) {
+                updateThirdPersonCamera();
+                return;
+            }
+
+            const charDef = CHARACTERS[state.selectedChar] || CHARACTERS.umar;
+            const strSpeedMult = 1 + (state.upgrades.strength - 1) * 0.10;
+            const strStaminaRegen = 1 + (state.upgrades.strength - 1) * 0.20;
+
+            const forward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+            const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+            const moveDir = new THREE.Vector3();
+
+            if (keys['KeyW'] || keys['ArrowUp']) moveDir.add(forward);
+            if (keys['KeyS'] || keys['ArrowDown']) moveDir.sub(forward);
+            if (keys['KeyD'] || keys['ArrowRight']) moveDir.add(right);
+            if (keys['KeyA'] || keys['ArrowLeft']) moveDir.sub(right);
+
+            const isMoving = moveDir.lengthSq() > 0;
+            if (isMoving) moveDir.normalize();
+
+            const wantsSprint = (keys['ShiftLeft'] || keys['ShiftRight']) && isMoving && !state.isCrouching && state.stamina > 5;
+            let speed = 4.2 * charDef.speedMult * strSpeedMult;
+
+            if (wantsSprint) {
+                speed *= 1.55;
+                state.stamina = Math.max(0, state.stamina - 24 * dt);
+            } else {
+                state.stamina = Math.min(100, state.stamina + 16 * strStaminaRegen * dt);
+            }
+            if (state.isCrouching) speed *= 0.55;
+
+            document.getElementById('stamina-bar').style.width = `${state.stamina}%`;
+            document.getElementById('stamina-text').textContent = `${Math.round(state.stamina)}%`;
+
+            if (isMoving) {
+                const nextX = playerPos.clone().add(new THREE.Vector3(moveDir.x * speed * dt, 0, 0));
+                if (!checkWallCollision(nextX)) playerPos.x = nextX.x;
+
+                const nextZ = playerPos.clone().add(new THREE.Vector3(0, 0, moveDir.z * speed * dt));
+                if (!checkWallCollision(nextZ)) playerPos.z = nextZ.z;
+
+                const targetAngle = Math.atan2(-moveDir.x, -moveDir.z);
+                let diff = targetAngle - playerRig.root.rotation.y;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                playerRig.root.rotation.y += diff * Math.min(1, dt * 14);
+
+                audio.playFootstep(wantsSprint);
+            } else {
+                let diff = yaw - playerRig.root.rotation.y;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                playerRig.root.rotation.y += diff * Math.min(1, dt * 8);
+            }
+
+            playerRig.root.position.copy(playerPos);
+            animateCharacterRig(playerRig, dt, elapsed, isMoving, wantsSprint, state.isCrouching, state.flashlightOn);
+            updateThirdPersonCamera();
+        }
+
+        // ==========================================
+        // 9. RAKAN SEPASUKAN 3D & BOT AI
+        // ==========================================
+        const remoteAvatars = {};
+        const botTeammates = [];
+
+        function getOrCreateRemoteAvatar(uid, playerData, slotIdx = 1) {
+            if (remoteAvatars[uid]) return remoteAvatars[uid];
+            const sIdx = playerData.slotIdx !== undefined ? playerData.slotIdx : slotIdx;
+            const rig = createFullBodyCharacter(
+                playerData.char || 'bomoh',
+                playerData.name || 'Rakan',
+                sIdx,
+                playerData.bodyTier || 0,
+                playerData.outfitLvl || 1
+            );
+            updateCharacterWeaponMesh(rig, playerData.weapon || 'none');
+            rig.root.position.set(playerData.x || state.spawnPos.x, 0, playerData.z || state.spawnPos.z);
+            scene.add(rig.root);
+
+            remoteAvatars[uid] = {
+                rig,
+                targetPos: rig.root.position.clone(),
+                targetYaw: 0,
+                lastWeapon: playerData.weapon || 'none',
+                lastBodyTier: playerData.bodyTier || 0,
+                lastOutfitLvl: playerData.outfitLvl || 1
+            };
+            return remoteAvatars[uid];
+        }
+
+        function spawnBotTeammates(count) {
+            const botConfigs = [
+                { uid: 'bot_1', name: 'Aiman', char: 'penyiasat', slotIdx: 1, weapon: 'spear', bodyTier: 1 },
+                { uid: 'bot_2', name: 'Tok Aki', char: 'bomoh', slotIdx: 2, weapon: 'uv', bodyTier: 0 },
+                { uid: 'bot_3', name: 'Haziq', char: 'penjaga', slotIdx: 3, weapon: 'crossbow', bodyTier: 2 }
+            ];
+            for (let i = 0; i < count; i++) {
+                const cfg = botConfigs[i];
+                const botData = { ...cfg, x: state.spawnPos.x + (i + 1) * 0.9, z: state.spawnPos.z + 0.65, yaw: 0, lives: 3 };
+                state.roomPlayers[cfg.uid] = botData;
+                const avatar = getOrCreateRemoteAvatar(cfg.uid, botData, cfg.slotIdx);
+                botTeammates.push({ data: botData, avatar, attackTimer: 0 });
+            }
+        }
+
+        function updateBots(dt, elapsed) {
+            for (const bot of botTeammates) {
+                const distToPlayer = bot.avatar.rig.root.position.distanceTo(playerPos);
+                let isMoving = false;
+                if (distToPlayer > 3.2) {
+                    const dir = playerPos.clone().sub(bot.avatar.rig.root.position).normalize();
+                    const nextPos = bot.avatar.rig.root.position.clone().addScaledVector(dir, 3.3 * dt);
+                    if (!checkWallCollision(nextPos, 0.45)) {
+                        bot.avatar.rig.root.position.copy(nextPos);
+                        bot.avatar.rig.root.rotation.y = Math.atan2(-dir.x, -dir.z);
+                        isMoving = true;
+                    }
+                }
+                animateCharacterRig(bot.avatar.rig, dt, elapsed, isMoving, false, false, true);
+
+                bot.attackTimer -= dt;
+                if (ghost && state.ghostStunTimer <= 0 && bot.attackTimer <= 0) {
+                    if (bot.avatar.rig.root.position.distanceTo(ghost.group.position) < 4.5) {
+                        bot.attackTimer = 2.5;
+                        bot.avatar.rig.attackSwing = 1.0;
+                        damageGhost(18, `${bot.data.name} menyerang hantu!`);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // 10. SINKRONISASI & AUTO-PADAM BILIK FIREBASE
+        // ==========================================
+        let lastSyncTime = 0;
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+            return code;
+        }
+
+        function updateTeammatesHUD() {
+            const listEl = document.getElementById('teammates-list');
+            listEl.innerHTML = '';
+            Object.values(state.roomPlayers).forEach((p, idx) => {
+                const sIdx = p.slotIdx !== undefined ? p.slotIdx : idx;
+                const outfit = PLAYER_SLOT_OUTFITS[sIdx % PLAYER_SLOT_OUTFITS.length];
+                const cInfo = CHARACTERS[p.char] || CHARACTERS.bomoh;
+                const wInfo = WEAPONS[p.weapon || 'none'];
+                const hearts = '❤️'.repeat(Math.max(0, p.lives ?? 3));
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-3 bg-white/5 px-2 py-1 rounded-lg border-l-4';
+                row.style.borderColor = outfit.badgeHex;
+                row.innerHTML = `<span class="font-semibold text-gray-200 truncate max-w-[115px]">${cInfo.icon} ${p.name}</span><span class="text-[11px]">${wInfo.icon} ${hearts || '💀'}</span>`;
+                listEl.appendChild(row);
+            });
+        }
+
+        async function createOnlineRoom() {
+            if (!firebaseReady || !db) {
+                showToast('Sila masukkan konfigurasi Firebase anda terlebih dahulu!');
+                return;
+            }
+            const nameInput = document.getElementById('player-name-input').value.trim();
+            state.playerName = nameInput || 'Umar';
+            state.level = parseInt(document.getElementById('level-selector').value, 10) || 1;
+            state.roomCode = generateRoomCode();
+            state.isHost = true;
+            state.slotIndex = 0;
+            roomDeleted = false;
+
+            const myPlayerPayload = {
+                uid: currentUserId, name: state.playerName, char: state.selectedChar, slotIdx: 0,
+                x: 5, z: 5, yaw: 0, lives: state.maxLives, weapon: 'none', flashlightOn: true, isHiding: false,
+                bodyTier: state.upgrades.body, outfitLvl: state.upgrades.outfit
+            };
+            state.roomPlayers[currentUserId] = myPlayerPayload;
+
+            document.getElementById('lobby-actions').classList.add('hidden');
+            document.getElementById('waiting-room-panel').classList.remove('hidden');
+            document.getElementById('display-room-code').textContent = state.roomCode;
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode);
+            await setDoc(roomRef, {
+                code: state.roomCode, hostId: currentUserId, maxPlayers: state.maxPlayers,
+                level: state.level,
+                status: 'waiting', seed: Math.floor(Math.random() * 10),
+                hasKey: false, victory: false,
+                ghost: { x: 40, z: 45, hp: 100, state: 'PATROL' },
+                players: { [currentUserId]: myPlayerPayload }
+            });
+            subscribeToRoom(state.roomCode);
+        }
+
+        async function joinOnlineRoom() {
+            if (!firebaseReady || !db) return showToast('Firebase belum bersambung!');
+            const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+            if (code.length < 4) return showToast('Masukkan 4 huruf Kod Bilik!');
+
+            const nameInput = document.getElementById('player-name-input').value.trim();
+            state.playerName = nameInput || 'Rakan_' + Math.floor(10 + Math.random() * 89);
+            state.roomCode = code;
+            state.isHost = false;
+            roomDeleted = false;
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+            const snap = await getDoc(roomRef);
+            if (!snap.exists()) return showToast('Kod bilik tidak dijumpai atau sudah tamat!');
+
+            const roomData = snap.data();
+            state.level = roomData.level || 1;
+            const existingCount = Object.keys(roomData.players || {}).length;
+            state.slotIndex = existingCount % 4;
+
+            const myPlayerPayload = {
+                uid: currentUserId, name: state.playerName, char: state.selectedChar, slotIdx: state.slotIndex,
+                x: 5, z: 5, yaw: 0, lives: state.maxLives, weapon: 'none', flashlightOn: true, isHiding: false,
+                bodyTier: state.upgrades.body, outfitLvl: state.upgrades.outfit
+            };
+
+            await updateDoc(roomRef, { [`players.${currentUserId}`]: myPlayerPayload });
+            document.getElementById('lobby-actions').classList.add('hidden');
+            document.getElementById('waiting-room-panel').classList.remove('hidden');
+            document.getElementById('display-room-code').textContent = state.roomCode;
+            subscribeToRoom(code);
+        }
+
+        function subscribeToRoom(code) {
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+            roomUnsubscribe = onSnapshot(roomRef, (snap) => {
+                if (!snap.exists()) {
+                    if (!state.isPlaying && !state.isGameOver) {
+                        showToast('Bilik telah ditutup oleh hos.');
+                        setTimeout(() => window.location.reload(), 1200);
+                    }
+                    return;
+                }
+                const data = snap.data();
+                state.roomPlayers = data.players || {};
+                if (data.level) state.level = data.level;
+
+                if (!state.isPlaying && !state.isGameOver) {
+                    const list = document.getElementById('waiting-players-list');
+                    list.innerHTML = '';
+                    const players = Object.values(state.roomPlayers);
+                    document.getElementById('waiting-count-text').textContent = `Peserta: ${players.length} / ${state.maxPlayers} (Tahap ${state.level})`;
+                    players.forEach((p, idx) => {
+                        const sIdx = p.slotIdx !== undefined ? p.slotIdx : idx;
+                        const outfit = PLAYER_SLOT_OUTFITS[sIdx % PLAYER_SLOT_OUTFITS.length];
+                        const cInfo = CHARACTERS[p.char] || CHARACTERS.bomoh;
+                        const card = document.createElement('div');
+                        card.className = 'p-2 rounded-xl bg-white/5 border text-center';
+                        card.style.borderColor = outfit.badgeHex;
+                        card.innerHTML = `<div class="text-xl">${cInfo.icon}</div><div class="font-bold text-xs text-white truncate mt-1">${p.name}</div><div class="text-[9px]" style="color:${outfit.badgeHex}">Baju ${outfit.label}</div>`;
+                        list.appendChild(card);
+                    });
+                    if (data.status === 'playing') launchMatch(data.seed || 0);
+                    return;
+                }
+
+                if (data.hasKey && !state.hasKey) {
+                    state.hasKey = true;
+                    if (keyMesh) { scene.remove(keyMesh); scene.remove(keyLight); keyMesh = null; }
+                    document.getElementById('key-status').innerHTML = `<span>🗝️</span> <span class="text-yellow-400">Ada!</span>`;
+                }
+
+                if (data.victory && !state.isGameOver) {
+                    audio.playVictory();
+                    endGame(true);
+                }
+
+                Object.entries(state.roomPlayers).forEach(([uid, pData], idx) => {
+                    if (uid === currentUserId) return;
+                    const avatar = getOrCreateRemoteAvatar(uid, pData, idx + 1);
+                    avatar.rig.root.visible = (pData.lives > 0 && !pData.isHiding);
+                    avatar.targetPos.set(pData.x, 0, pData.z);
+                    avatar.targetYaw = pData.yaw || 0;
+                    if (avatar.lastWeapon !== (pData.weapon || 'none')) {
+                        avatar.lastWeapon = pData.weapon || 'none';
+                        updateCharacterWeaponMesh(avatar.rig, avatar.lastWeapon);
+                    }
+                    if (avatar.lastBodyTier !== (pData.bodyTier || 0) || avatar.lastOutfitLvl !== (pData.outfitLvl || 1)) {
+                        avatar.lastBodyTier = pData.bodyTier || 0;
+                        avatar.lastOutfitLvl = pData.outfitLvl || 1;
+                        refreshRigAppearance(avatar.rig, pData.name, pData.char, pData.slotIdx ?? idx + 1, avatar.lastBodyTier, avatar.lastOutfitLvl);
+                    }
+                });
+
+                if (!state.isHost && data.ghost && ghost) {
+                    ghost.group.position.x += (data.ghost.x - ghost.group.position.x) * 0.4;
+                    ghost.group.position.z += (data.ghost.z - ghost.group.position.z) * 0.4;
+                }
+                updateTeammatesHUD();
+            });
+        }
+
+        async function syncStateToFirebase(force = false) {
+            if (roomDeleted || state.isBotMode || !firebaseReady || !db || state.roomCode === 'SOLO') return;
+            const now = performance.now();
+            if (!force && now - lastSyncTime < 140) return;
+            lastSyncTime = now;
+
+            try {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode);
+                const updates = {
+                    [`players.${currentUserId}`]: {
+                        uid: currentUserId, name: state.playerName, char: state.selectedChar, slotIdx: state.slotIndex,
+                        x: Number(playerPos.x.toFixed(2)), z: Number(playerPos.z.toFixed(2)),
+                        yaw: Number(playerRig.root.rotation.y.toFixed(2)), lives: state.lives, weapon: state.weapon,
+                        flashlightOn: state.flashlightOn, isHiding: state.isHiding,
+                        bodyTier: state.upgrades.body, outfitLvl: state.upgrades.outfit
+                    }
+                };
+                if (state.hasKey) updates.hasKey = true;
+                if (state.isHost && ghost) {
+                    updates.ghost = {
+                        x: Number(ghost.group.position.x.toFixed(2)),
+                        z: Number(ghost.group.position.z.toFixed(2)),
+                        hp: state.ghostHp, state: ghost.state
+                    };
+                }
+                await updateDoc(roomRef, updates);
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // 11. MULA & TAMAT PERMAINAN (SISTEM LEVEL PROGRESIF)
+        // ==========================================
+        function launchMatch(seed = 0) {
+            if (state.isPlaying) return;
+            audio.init();
+            audio.playClick();
+            syncViewportToScreen();
+
+            const tier = BODY_TIERS[state.upgrades.body] || BODY_TIERS[0];
+            state.maxLives = 3 + tier.bonusLives;
+            state.lives = state.maxLives;
+
+            document.getElementById('hud-level-badge').textContent = `LVL ${state.level}`;
+
+            applyUpgradesToActor();
+            buildMansion(seed + state.level);
+            ghost = new GhostEntity();
+
+            if (state.isBotMode) spawnBotTeammates(state.maxPlayers - 1);
+
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('room-code-badge').textContent = state.roomCode;
+
+            updateLivesUI();
+            updateDiamondsUI();
+            updateTeammatesHUD();
+            state.isPlaying = true;
+            state.startTime = performance.now();
+            showToast(`🔥 Tahap ${state.level} Bermula! Berhati-hati di dalam gelap...`);
+            if (!('ontouchstart' in window)) canvas.requestPointerLock?.();
+        }
+
+        async function endGame(isVictory) {
+            if (state.isGameOver) return;
+            state.isGameOver = true;
+            state.isPlaying = false;
+            document.exitPointerLock?.();
+
+            const lvlCfg = getLevelConfig(state.level);
+            const nextLevelBtn = document.getElementById('next-level-btn');
+
+            if (isVictory) {
+                state.diamonds += lvlCfg.clearRewardDiamonds;
+                state.level += 1; // Naik ke tahap seterusnya secara automatik!
+                nextLevelBtn.classList.remove('hidden');
+                nextLevelBtn.textContent = `🔥 TERUS KE TAHAP ${state.level}`;
+            } else {
+                nextLevelBtn.classList.add('hidden');
+            }
+            updateDiamondsUI();
+
+            if (!state.isBotMode && firebaseReady && db && state.roomCode !== 'SOLO') {
+                try {
+                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode);
+                    if (isVictory) {
+                        await updateDoc(roomRef, { victory: true, status: 'finished' });
+                    }
+                } catch (e) {}
+
+                setTimeout(() => {
+                    cleanupFirebaseRoom();
+                }, 1500);
+            }
+
+            const elapsedSec = (performance.now() - state.startTime) / 1000;
+            const m = Math.floor(elapsedSec / 60).toString().padStart(2, '0');
+            const s = Math.floor(elapsedSec % 60).toString().padStart(2, '0');
+            document.getElementById('stat-time').textContent = `${m}:${s}`;
+            document.getElementById('stat-diamonds').textContent = `💎 ${state.diamonds}`;
+            document.getElementById('stat-level').textContent = `LVL ${isVictory ? state.level - 1 : state.level}`;
+
+            document.getElementById('end-level-subtitle').textContent = isVictory
+                ? `Tahap ${state.level - 1} Berjaya Dilepasi!`
+                : `Tewas di Tahap ${state.level}`;
+            document.getElementById('end-icon').textContent = isVictory ? '🏆' : '💀';
+            document.getElementById('end-title').textContent = isVictory ? 'PASUKAN BERJAYA KELUAR!' : 'PASUKAN TEWAS';
+            document.getElementById('cleanup-status-text').textContent = isVictory
+                ? `🎉 Ganjaran +${lvlCfg.clearRewardDiamonds} 💎 Berlian! Tahap ${state.level} kini dibuka dengan cabaran lebih sukar!`
+                : (state.isBotMode ? 'Cuba tingkatkan kelengkapan aktor dan ulang semula.' : '🧹 Bilik online telah dipadamkan secara automatik dari Firebase.');
+
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+        }
+
+        let lastFrameTime = performance.now();
+        function animate(now) {
+            requestAnimationFrame(animate);
+            const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
+            lastFrameTime = now;
+            const elapsed = now * 0.001;
+
+            if (keyMesh) keyMesh.rotation.y = elapsed * 2.2;
+            diamondPickups.forEach((dm, i) => {
+                if (dm.active) {
+                    dm.mesh.rotation.y = elapsed * 2.6 + i;
+                    dm.mesh.position.y = 1.15 + Math.sin(elapsed * 3.2 + i) * 0.12;
+                }
+            });
+            weaponPickups.forEach((wp, i) => {
+                if (wp.active) {
+                    wp.itemMesh.rotation.y = elapsed * 1.8 + i;
+                }
+            });
+
+            Object.values(remoteAvatars).forEach(av => {
+                const distMoved = av.rig.root.position.distanceTo(av.targetPos);
+                av.rig.root.position.lerp(av.targetPos, Math.min(1, dt * 12));
+                av.rig.root.rotation.y = av.targetYaw;
+                animateCharacterRig(av.rig, dt, elapsed, distMoved > 0.03, false, false, true);
+            });
+
+            if (state.isPlaying && !state.isGameOver) {
+                updatePlayer(dt, elapsed);
+                checkNearbyInteractables();
+                updateExtraSpirits(dt, elapsed);
+                if (state.isBotMode) updateBots(dt, elapsed);
+                if (ghost) ghost.update(dt, elapsed, playerPos);
+                syncStateToFirebase(false);
+            }
+            renderer.render(scene, camera);
+        }
+
+        // Event Listeners Lobi & Tahap
+        updateDiamondsUI();
+        const levelSelectEl = document.getElementById('level-selector');
+        if (levelSelectEl) {
+            // Pastikan pilihan level dalam dropdown menyokong level yang telah dibuka
+            if (state.level > 5) {
+                const opt = document.createElement('option');
+                opt.value = String(state.level);
+                opt.textContent = `Tahap ${state.level} — Azab Malam Tanpa Hujung (Ekstrem)`;
+                levelSelectEl.appendChild(opt);
+            }
+            levelSelectEl.value = String(state.level);
+            levelSelectEl.addEventListener('change', () => {
+                state.level = parseInt(levelSelectEl.value, 10) || 1;
+                updateDiamondsUI();
+            });
+        }
+
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.size-btn').forEach(b => b.className = 'size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer');
+                btn.className = 'size-btn py-2 rounded-xl border border-red-500 bg-red-950/40 text-white font-bold text-xs cursor-pointer';
+                state.maxPlayers = parseInt(btn.dataset.size, 10);
+            });
+        });
+
+        const charSlotMap = { umar: 0, bomoh: 1, penyiasat: 2, penjaga: 3 };
+        document.querySelectorAll('.char-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                state.selectedChar = card.dataset.char;
+                state.slotIndex = charSlotMap[state.selectedChar] ?? 0;
+            });
+        });
+
+        document.getElementById('create-room-btn').addEventListener('click', createOnlineRoom);
+        document.getElementById('join-room-btn').addEventListener('click', joinOnlineRoom);
+        document.getElementById('solo-bot-btn').addEventListener('click', () => {
+            const nameInput = document.getElementById('player-name-input').value.trim();
+            state.playerName = nameInput || 'Umar';
+            state.level = parseInt(document.getElementById('level-selector').value, 10) || 1;
+            state.isBotMode = true;
+            state.roomCode = 'CO-OP AI';
+            state.roomPlayers[currentUserId] = {
+                uid: currentUserId, name: state.playerName, char: state.selectedChar,
+                slotIdx: state.slotIndex, lives: state.maxLives, weapon: 'none'
+            };
+            launchMatch(Math.floor(Math.random() * 10));
+        });
+
+        document.getElementById('cancel-room-btn').addEventListener('click', async () => {
+            await cleanupFirebaseRoom();
+            window.location.reload();
+        });
+
+        document.getElementById('copy-code-btn').addEventListener('click', () => {
+            navigator.clipboard?.writeText(state.roomCode);
+            showToast(`Kod bilik ${state.roomCode} disalin!`);
+        });
+
+        document.getElementById('start-match-btn').addEventListener('click', async () => {
+            if (firebaseReady && db && state.isHost) {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode);
+                await updateDoc(roomRef, { status: 'playing', level: state.level });
+            }
+            launchMatch(0);
+        });
+
+        document.getElementById('next-level-btn').addEventListener('click', async () => {
+            await cleanupFirebaseRoom();
+            window.location.reload();
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', async () => {
+            await cleanupFirebaseRoom();
+            window.location.reload();
+        });
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
