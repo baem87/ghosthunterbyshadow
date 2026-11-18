@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#05060a">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Malam Bersama Umar Di Rumah Hantu — 3D Co-op Level Progresif</title>
+    <title>Malam Bersama Umar Di Rumah Hantu — 3D Co-op</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js r128 -->
@@ -53,15 +53,14 @@
             height: 100dvh;
             z-index: 1;
             display: block;
-            /* Pencahayaan samar-samar & sinematik */
             filter: contrast(1.14) saturate(1.1) brightness(0.92);
         }
 
         .safe-hud {
-            padding-top: max(12px, var(--safe-top));
-            padding-bottom: max(12px, var(--safe-bottom));
-            padding-left: max(12px, var(--safe-left));
-            padding-right: max(12px, var(--safe-right));
+            padding-top: max(6px, var(--safe-top));
+            padding-bottom: max(6px, var(--safe-bottom));
+            padding-left: max(8px, var(--safe-left));
+            padding-right: max(8px, var(--safe-right));
         }
 
         .vignette-overlay {
@@ -69,11 +68,11 @@
             inset: 0;
             pointer-events: none;
             z-index: 5;
-            background: radial-gradient(circle at center, transparent 48%, rgba(0, 0, 0, 0.78) 100%);
+            background: radial-gradient(circle at center, transparent 52%, rgba(0, 0, 0, 0.72) 100%);
             transition: background 0.3s ease;
         }
         .danger-vignette {
-            background: radial-gradient(circle at center, rgba(150, 0, 0, 0.16) 38%, rgba(120, 0, 0, 0.90) 100%) !important;
+            background: radial-gradient(circle at center, rgba(150, 0, 0, 0.16) 42%, rgba(120, 0, 0, 0.88) 100%) !important;
             animation: pulseDanger 0.6s infinite alternate;
         }
         @keyframes pulseDanger {
@@ -88,7 +87,7 @@
             height: 200%;
             pointer-events: none;
             z-index: 6;
-            opacity: 0.035;
+            opacity: 0.03;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             animation: grainShift 0.4s steps(2) infinite;
         }
@@ -127,8 +126,8 @@
             position: fixed;
             top: 44%;
             left: 50%;
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             background: rgba(255, 255, 255, 0.65);
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -137,24 +136,24 @@
             transition: all 0.15s ease;
         }
         #crosshair.interactable {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             background: transparent;
             border: 2px solid #facc15;
-            box-shadow: 0 0 12px #facc15;
+            box-shadow: 0 0 10px #facc15;
         }
 
         .hud-panel {
-            background: rgba(8, 10, 16, 0.84);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(8, 10, 16, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.14);
         }
 
         .touch-btn {
-            background: rgba(18, 20, 28, 0.80);
+            background: rgba(18, 20, 28, 0.72);
             backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.24);
             touch-action: manipulation;
         }
         .touch-btn:active, .touch-btn.active-touch {
@@ -182,14 +181,21 @@
             touch-action: none;
         }
 
-        @media (orientation: landscape) and (max-height: 500px) {
+        /* Pelarasan khusus skrin telefon landskap supaya paparan 3D maksimum */
+        @media (max-width: 920px) {
             #dpad-grid {
-                width: 7.2rem;
-                height: 7.2rem;
+                width: 6.4rem;
+                height: 6.4rem;
+                gap: 3px;
             }
-            .hud-compact {
-                padding: 0.35rem 0.65rem;
-                font-size: 0.72rem;
+            #dpad-grid button {
+                font-size: 0.75rem;
+                border-radius: 0.55rem;
+            }
+            .mobile-action-btn {
+                padding: 0.32rem 0.5rem !important;
+                font-size: 0.62rem !important;
+                border-radius: 0.55rem !important;
             }
             #teammates-hud {
                 display: none;
@@ -208,160 +214,201 @@
 
     <div id="jumpscare-flash" class="fixed inset-0 z-30 pointer-events-none hidden flex items-center justify-center bg-red-950/88">
         <div class="text-center animate-bounce">
-            <div class="text-7xl md:text-9xl filter drop-shadow-[0_0_35px_rgba(255,0,0,1)]">👻</div>
-            <p class="font-horror text-2xl md:text-5xl text-red-500 font-black tracking-widest mt-4 uppercase">DIA MENJUMPAI KAMU!</p>
+            <div class="text-6xl md:text-9xl filter drop-shadow-[0_0_35px_rgba(255,0,0,1)]">👻</div>
+            <p class="font-horror text-xl md:text-5xl text-red-500 font-black tracking-widest mt-3 uppercase">DIA MENJUMPAI KAMU!</p>
         </div>
     </div>
 
     <div id="crosshair"></div>
 
-    <!-- HUD -->
+    <!-- HUD ULTRA-COMPACT (Jalur Info Nipis supaya Paparan 3D Luas) -->
     <div id="hud" class="fixed inset-0 z-20 pointer-events-none hidden flex flex-col justify-between safe-hud">
-        <div class="flex flex-wrap items-start justify-between gap-2">
-            <div class="flex flex-col gap-1.5">
-                <div class="hud-panel hud-compact rounded-xl px-3 py-1.5 flex items-center gap-2.5 sm:gap-3 shadow-2xl">
-                    <div>
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Tahap</span>
-                        <div class="text-xs md:text-sm font-black text-amber-400 flex items-center gap-1">
-                            <span>🔥</span> <span id="hud-level-badge">LVL 1</span>
-                        </div>
-                    </div>
-                    <div class="h-7 w-px bg-white/15"></div>
-                    <div>
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Nyawa</span>
-                        <div id="lives-display" class="text-sm md:text-lg tracking-wider">❤️❤️❤️</div>
-                    </div>
-                    <div class="h-7 w-px bg-white/15"></div>
-                    <div>
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Berlian</span>
-                        <div id="diamonds-display" class="text-xs md:text-sm font-black text-cyan-300 flex items-center gap-1">
-                            <span>💎</span> <span id="diamond-count-hud">0</span>
-                        </div>
-                    </div>
-                    <div class="h-7 w-px bg-white/15"></div>
-                    <div>
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Kunci</span>
-                        <div id="key-status" class="text-xs font-bold text-red-400 flex items-center gap-1">
-                            <span>🔒</span> <span>Tiada</span>
-                        </div>
-                    </div>
-                    <div class="h-7 w-px bg-white/15"></div>
-                    <div>
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 block font-semibold">Senjata</span>
-                        <div id="weapon-status" class="text-xs font-bold text-amber-300 flex items-center gap-1">
-                            <span>✋</span> <span>Kosong</span>
-                        </div>
-                    </div>
+        <!-- Baris Atas: Semua Info Dipadatkan Dalam Satu Jalur Nipis -->
+        <div class="flex items-start justify-between gap-1.5">
+            <!-- Kiri: Jalur Status Pemain & Stamina Mini -->
+            <div class="flex flex-col gap-1">
+                <div class="hud-panel rounded-lg px-2 py-1 flex items-center gap-2 text-[10px] sm:text-xs shadow-lg">
+                    <span class="font-black text-amber-400" id="hud-level-badge">🔥L1</span>
+                    <span class="text-white/20">|</span>
+                    <span id="lives-display" class="tracking-tighter text-[11px] sm:text-sm">❤️❤️❤️</span>
+                    <span class="text-white/20">|</span>
+                    <span class="font-bold text-cyan-300">💎<span id="diamond-count-hud">0</span></span>
+                    <span class="text-white/20">|</span>
+                    <span id="key-status" class="font-bold text-red-400">🔒0</span>
+                    <span class="text-white/20">|</span>
+                    <span id="weapon-status" class="font-bold text-amber-300">✋</span>
                 </div>
 
-                <div class="hud-panel hud-compact rounded-xl px-3 py-1 flex items-center gap-3 shadow-xl w-fit pointer-events-auto">
-                    <div class="w-24 md:w-32">
-                        <div class="flex justify-between text-[9px] uppercase tracking-wider text-gray-300 mb-0.5">
-                            <span>Stamina</span>
-                            <span id="stamina-text">100%</span>
-                        </div>
-                        <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <!-- Bar Stamina & Status Lampu Ultra-Nipis -->
+                <div class="hud-panel rounded-lg px-2 py-0.5 flex items-center gap-2 w-fit text-[9px] sm:text-[10px]">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-emerald-300 font-bold">⚡</span>
+                        <div class="w-16 sm:w-24 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                             <div id="stamina-bar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-100" style="width: 100%;"></div>
                         </div>
+                        <span id="stamina-text" class="text-gray-300 font-mono">100%</span>
                     </div>
-                    <div class="h-4 w-px bg-white/15"></div>
-                    <div class="text-xs font-semibold flex items-center gap-1" id="flashlight-status">
-                        <span class="text-yellow-400">🔦</span> <span class="text-gray-200">ON</span>
-                    </div>
-                    <div class="h-4 w-px bg-white/15"></div>
-                    <button id="hud-upgrade-btn" class="px-2 py-0.5 rounded-lg bg-cyan-950/90 border border-cyan-400/60 text-cyan-200 text-[10px] font-bold hover:bg-cyan-800 transition-all cursor-pointer">
-                        💎 UPGRADE [U]
-                    </button>
+                    <span class="text-white/20">|</span>
+                    <span id="flashlight-status" class="font-bold text-yellow-300">🔦ON</span>
                 </div>
 
-                <div id="teammates-hud" class="hud-panel rounded-xl px-3 py-1.5 shadow-xl w-fit max-w-xs">
+                <!-- Senarai Rakan (Dipaparkan pada skrin besar sahaja) -->
+                <div id="teammates-hud" class="hud-panel rounded-lg px-2.5 py-1 shadow-xl w-fit max-w-xs">
                     <div class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-1 flex items-center justify-between gap-3">
-                        <span>Rakan Skuad</span>
+                        <span>Skuad</span>
                         <span id="room-code-badge" class="text-yellow-400 font-mono">SOLO</span>
                     </div>
                     <div id="teammates-list" class="flex flex-col gap-1 text-xs"></div>
                 </div>
             </div>
 
-            <div class="flex flex-col items-end gap-1.5">
-                <div class="hud-panel hud-compact rounded-lg px-2.5 py-1 flex items-center gap-2 border-emerald-500/40">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-[10px] font-mono font-bold tracking-widest text-emerald-300" id="camera-mode-label">3RD PERSON: PENUH</span>
-                </div>
-
-                <div class="hud-panel hud-compact rounded-xl px-3 py-1.5 w-44 md:w-60 border-purple-500/30">
-                    <div class="flex justify-between text-[9px] uppercase tracking-wider mb-1">
-                        <span class="text-purple-300 font-bold" id="ghost-state-label">👻 Roh Meronda</span>
-                        <span class="text-gray-300 font-mono" id="ghost-hp-text">100/100</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden border border-white/10">
+            <!-- Kanan: Status Hantu & Kamera Mini -->
+            <div class="flex flex-col items-end gap-1">
+                <div class="hud-panel rounded-lg px-2 py-1 flex items-center gap-1.5 text-[10px] sm:text-xs border-purple-500/30">
+                    <span class="text-purple-300 font-bold truncate max-w-[95px] sm:max-w-none" id="ghost-state-label">👻 Meronda</span>
+                    <div class="w-14 sm:w-24 h-1.5 bg-gray-900 rounded-full overflow-hidden border border-white/10">
                         <div id="ghost-hp-bar" class="h-full bg-gradient-to-r from-purple-600 via-red-600 to-rose-500 transition-all duration-200" style="width: 100%;"></div>
                     </div>
+                    <span class="text-gray-300 font-mono text-[9px]" id="ghost-hp-text">100</span>
+                    <span class="text-white/20 hidden sm:inline">|</span>
+                    <span class="hidden sm:inline text-[9px] font-mono text-emerald-300" id="camera-mode-label">PENUH</span>
                 </div>
 
-                <div id="ghost-warning" class="hud-panel rounded-lg px-2.5 py-1 border-red-600/60 bg-red-950/75 hidden">
-                    <span class="text-[11px] font-bold tracking-wider text-red-300 animate-pulse">⚠️ KELIBAT HANTU HAMPIR!</span>
+                <div id="ghost-warning" class="hud-panel rounded-md px-2 py-0.5 border-red-600/60 bg-red-950/80 hidden">
+                    <span class="text-[10px] font-bold text-red-300 animate-pulse">⚠️ HANTU HAMPIR!</span>
                 </div>
             </div>
         </div>
 
+        <!-- Tengah: Notifikasi & Prom Interaksi -->
         <div class="flex flex-col items-center justify-center my-auto pointer-events-none">
-            <div id="spectator-banner" class="hidden bg-red-950/90 border border-red-500/60 px-5 py-2 rounded-full shadow-2xl mb-2">
-                <p class="text-red-200 font-bold tracking-widest text-xs">
-                    👻 MOD ROH PEMERHATI
-                </p>
+            <div id="spectator-banner" class="hidden bg-red-950/90 border border-red-500/60 px-4 py-1 rounded-full shadow-2xl mb-1.5">
+                <p class="text-red-200 font-bold tracking-widest text-[10px]">👻 MOD ROH PEMERHATI</p>
             </div>
 
-            <div id="hiding-indicator" class="hidden bg-black/85 border border-emerald-500/50 px-5 py-2 rounded-full shadow-[0_0_25px_rgba(16,185,129,0.35)] mb-2">
-                <p class="text-emerald-400 font-bold tracking-widest text-xs flex items-center gap-2">
-                    <span>👁️‍🗨️</span> SEDANG MENYOROK
-                </p>
+            <div id="hiding-indicator" class="hidden bg-black/85 border border-emerald-500/50 px-4 py-1 rounded-full shadow-lg mb-1.5">
+                <p class="text-emerald-400 font-bold tracking-widest text-[10px]">👁️‍🗨️ SEDANG MENYOROK</p>
             </div>
 
-            <div id="interact-prompt" class="hidden hud-panel px-4 py-2 rounded-xl border-yellow-400/50 shadow-lg">
-                <p id="interact-text" class="text-yellow-300 font-bold text-xs md:text-base tracking-wide">
+            <div id="interact-prompt" class="hidden hud-panel px-3 py-1 rounded-lg border-yellow-400/50 shadow-lg">
+                <p id="interact-text" class="text-yellow-300 font-bold text-[11px] sm:text-sm">
                     Tekan [E] untuk berinteraksi
                 </p>
             </div>
 
-            <div id="toast-msg" class="hidden mt-2 bg-gray-950/95 border border-amber-500/50 text-white px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold shadow-2xl">
+            <div id="toast-msg" class="hidden mt-1.5 bg-gray-950/95 border border-amber-500/50 text-white px-3 py-1 rounded-md text-[11px] sm:text-xs font-semibold shadow-2xl">
             </div>
         </div>
 
-        <!-- Kawalan Sentuhan Mudah Alih -->
+        <!-- Baris Bawah: Kawalan Sentuhan Padat -->
         <div id="mobile-controls" class="flex justify-between items-end pointer-events-auto">
-            <div id="dpad-grid" class="grid grid-cols-3 gap-1.5 w-32 h-32 sm:w-36 sm:h-36">
+            <div id="dpad-grid" class="grid grid-cols-3 gap-1 w-28 h-28 sm:w-32 sm:h-32">
                 <div></div>
-                <button id="btn-up" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">▲</button>
+                <button id="btn-up" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">▲</button>
                 <div></div>
-                <button id="btn-left" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">◀</button>
-                <button id="btn-down" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">▼</button>
-                <button id="btn-right" class="touch-btn rounded-xl flex items-center justify-center text-lg font-bold">▶</button>
+                <button id="btn-left" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">◀</button>
+                <button id="btn-down" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">▼</button>
+                <button id="btn-right" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">▶</button>
             </div>
 
-            <div class="flex flex-col gap-1.5 items-end">
-                <div class="flex gap-1.5">
-                    <button id="btn-upgrade" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-cyan-300 border-cyan-400/50">💎 UPGRADE</button>
-                    <button id="btn-cam" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-emerald-300">📷 KAMERA</button>
-                    <button id="btn-flashlight" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-yellow-300">🔦 LAMPU</button>
-                    <button id="btn-crouch" class="touch-btn px-2.5 py-2 rounded-xl text-[11px] font-bold text-blue-300">🧎 TUNDUK</button>
+            <div class="flex flex-col gap-1 items-end">
+                <div class="flex gap-1">
+                    <button id="btn-upgrade" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-cyan-300 border-cyan-400/50">💎 UPGRADE</button>
+                    <button id="btn-cam" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-emerald-300">📷 VIEW</button>
+                    <button id="btn-flashlight" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-yellow-300">🔦 SULUH</button>
+                    <button id="btn-crouch" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-blue-300">🧎 TUNDUK</button>
                 </div>
-                <div class="flex gap-1.5">
-                    <button id="btn-sprint" class="touch-btn px-3 py-2.5 rounded-xl text-[11px] font-bold text-emerald-300">⚡ LARI</button>
-                    <button id="btn-attack" class="touch-btn px-3.5 py-2.5 rounded-xl text-[11px] font-extrabold text-red-400 border-red-500/50">⚔️ SERANG</button>
-                    <button id="btn-interact" class="touch-btn px-3.5 py-2.5 rounded-xl text-[11px] font-extrabold text-yellow-400 border-yellow-400/50">🖐️ AMBIL</button>
+                <div class="flex gap-1">
+                    <button id="btn-sprint" class="touch-btn mobile-action-btn px-2.5 py-2 rounded-lg text-[10px] font-bold text-emerald-300">⚡ LARI</button>
+                    <button id="btn-attack" class="touch-btn mobile-action-btn px-3 py-2 rounded-lg text-[10px] font-extrabold text-red-400 border-red-500/50">⚔️ SERANG</button>
+                    <button id="btn-interact" class="touch-btn mobile-action-btn px-3 py-2 rounded-lg text-[10px] font-extrabold text-yellow-400 border-yellow-400/50">🖐️ AMBIL</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- LANGKAH 1: SKRIN DAFTAR PEMAIN & JANA ID UNIK (UMR-XXXX) -->
+    <!-- ========================================================= -->
+    <div id="register-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-md safe-hud overflow-y-auto">
+        <div class="max-w-lg w-full hud-panel rounded-2xl p-5 sm:p-7 border border-red-800/60 shadow-[0_0_90px_rgba(185,28,28,0.45)] my-auto max-h-[95dvh] overflow-y-auto">
+            <div class="text-center">
+                <div class="inline-block px-3 py-1 rounded-full bg-red-950/90 border border-red-500/40 text-red-400 text-[10px] font-bold tracking-widest uppercase mb-1.5">
+                    Pendaftaran Peserta Rumah Hantu
+                </div>
+                <h1 class="font-horror text-xl sm:text-3xl font-black text-white tracking-wider drop-shadow-[0_4px_15px_rgba(220,38,38,0.8)]">
+                    MALAM BERSAMA UMAR<br>DI RUMAH HANTU
+                </h1>
+                <p class="text-xs text-gray-400 mt-1">Daftar nama untuk mendapatkan <span class="text-yellow-400 font-bold">ID Peserta Unik</span> sebelum memilih watak.</p>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-2 p-1 rounded-xl bg-black/60 border border-white/10">
+                <button type="button" id="tab-new-register" class="py-2 rounded-lg bg-red-800 text-white font-bold text-xs cursor-pointer transition-all">
+                    📝 Daftar Peserta Baru
+                </button>
+                <button type="button" id="tab-existing-login" class="py-2 rounded-lg text-gray-400 hover:text-white font-bold text-xs cursor-pointer transition-all">
+                    🪪 Masuk Guna ID
+                </button>
+            </div>
+
+            <form id="form-new-register" class="mt-3 space-y-2.5">
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-300 font-bold mb-1">Nama Aktor / Peserta</label>
+                    <input id="reg-name-input" type="text" maxlength="14" required placeholder="Contoh: Umar, Aiman, Sarah..."
+                           class="w-full px-3.5 py-2 rounded-xl bg-black/70 border border-white/20 text-white font-semibold focus:outline-none focus:border-red-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-300 font-bold mb-1">Kod PIN Keselamatan (4–6 Digit/Huruf)</label>
+                    <input id="reg-pin-input" type="text" maxlength="6" required placeholder="Contoh: 1234"
+                           class="w-full px-3.5 py-2 rounded-xl bg-black/70 border border-white/20 text-yellow-300 font-mono font-bold tracking-widest focus:outline-none focus:border-yellow-400 text-sm">
+                </div>
+                <button type="submit" id="btn-submit-register" class="w-full py-3 rounded-xl bg-gradient-to-r from-red-800 via-red-600 to-red-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm tracking-widest shadow-lg cursor-pointer">
+                    🪪 DAFTAR & DAPATKAN ID PESERTA
+                </button>
+            </form>
+
+            <form id="form-existing-login" class="hidden mt-3 space-y-2.5">
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-300 font-bold mb-1">ID Peserta Anda</label>
+                    <input id="login-id-input" type="text" maxlength="10" required placeholder="Contoh: UMR-4829"
+                           class="w-full px-3.5 py-2 rounded-xl bg-black/70 border border-white/20 text-cyan-300 font-mono font-bold uppercase tracking-widest focus:outline-none focus:border-cyan-400 text-sm">
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-300 font-bold mb-1">Kod PIN Anda</label>
+                    <input id="login-pin-input" type="password" maxlength="6" required placeholder="Masukkan PIN..."
+                           class="w-full px-3.5 py-2 rounded-xl bg-black/70 border border-white/20 text-white font-mono focus:outline-none focus:border-cyan-400 text-sm">
+                </div>
+                <button type="submit" id="btn-submit-login" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-800 via-cyan-600 to-cyan-800 hover:from-cyan-700 hover:to-cyan-700 text-white font-horror font-bold text-sm tracking-widest shadow-lg cursor-pointer">
+                    🔓 LOG MASUK KE LOBI WATAK
+                </button>
+            </form>
+
+            <div id="id-issued-card" class="hidden mt-3 p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-400/60 text-center">
+                <div class="text-xs text-emerald-300 font-bold uppercase tracking-wider">✅ Pendaftaran Berjaya! Simpan ID Anda:</div>
+                <div class="mt-1.5 flex items-center justify-center gap-2">
+                    <span id="issued-player-id" class="font-mono text-xl font-black text-yellow-300 tracking-widest bg-black/70 px-3.5 py-1 rounded-lg border border-yellow-400/50">UMR-0000</span>
+                    <button type="button" id="copy-player-id-btn" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white cursor-pointer">Salin ID</button>
+                </div>
+                <p class="text-[11px] text-gray-300 mt-1.5">Peserta: <span id="issued-player-name" class="font-bold text-white">Umar</span></p>
+                <button type="button" id="proceed-to-lobby-btn" class="mt-2.5 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold text-xs sm:text-sm tracking-wider uppercase cursor-pointer">
+                    🎭 TERUSKAN KE PILIHAN WATAK →
+                </button>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-400">
+                <span id="reg-firebase-status">Pelayan: Menyambung...</span>
+                <span class="text-gray-500">Rekod disimpan automatik</span>
             </div>
         </div>
     </div>
 
     <!-- MODAL NAIK TARAF AKTOR -->
     <div id="upgrade-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/88 backdrop-blur-md safe-hud">
-        <div class="max-w-xl w-full hud-panel rounded-2xl p-5 border border-cyan-500/40 shadow-[0_0_60px_rgba(6,182,212,0.3)] max-h-[92dvh] overflow-y-auto">
-            <div class="flex items-center justify-between pb-3 border-b border-white/15">
+        <div class="max-w-xl w-full hud-panel rounded-2xl p-4 sm:p-5 border border-cyan-500/40 shadow-[0_0_60px_rgba(6,182,212,0.3)] max-h-[92dvh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-2.5 border-b border-white/15">
                 <div>
-                    <h2 class="font-horror text-xl md:text-2xl font-black text-cyan-300 tracking-wider">NAIK TARAF AKTOR</h2>
-                    <p class="text-[11px] text-gray-400">Gunakan 💎 Berlian untuk bersedia menghadapi Tahap (Level) yang lebih sukar</p>
+                    <h2 class="font-horror text-lg md:text-2xl font-black text-cyan-300 tracking-wider">NAIK TARAF AKTOR</h2>
+                    <p class="text-[11px] text-gray-400">Gunakan 💎 Berlian untuk bersedia menghadapi Tahap yang lebih sukar</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="px-3 py-1 rounded-xl bg-cyan-950/90 border border-cyan-400/50 text-cyan-300 font-black text-sm">
@@ -371,7 +418,7 @@
                 </div>
             </div>
 
-            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div class="p-3 rounded-xl bg-white/5 border border-white/15 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center">
@@ -380,7 +427,7 @@
                         </div>
                         <p id="upg-outfit-desc" class="text-[11px] text-gray-400 mt-1">Perisai 0%, Jarak Suluh +0m</p>
                     </div>
-                    <button id="btn-upg-outfit" class="mt-3 w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs cursor-pointer">
+                    <button id="btn-upg-outfit" class="mt-2.5 w-full py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs cursor-pointer">
                         Naik Taraf (3 💎)
                     </button>
                 </div>
@@ -393,7 +440,7 @@
                         </div>
                         <p id="upg-weapon-desc" class="text-[11px] text-gray-400 mt-1">Kuasa Serangan +0%, Jarak +0%</p>
                     </div>
-                    <button id="btn-upg-weapon" class="mt-3 w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs cursor-pointer">
+                    <button id="btn-upg-weapon" class="mt-2.5 w-full py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs cursor-pointer">
                         Naik Taraf (3 💎)
                     </button>
                 </div>
@@ -406,7 +453,7 @@
                         </div>
                         <p id="upg-strength-desc" class="text-[11px] text-gray-400 mt-1">Laju Larian +0%, Pemulihan Stamina +0%</p>
                     </div>
-                    <button id="btn-upg-strength" class="mt-3 w-full py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs cursor-pointer">
+                    <button id="btn-upg-strength" class="mt-2.5 w-full py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs cursor-pointer">
                         Naik Taraf (3 💎)
                     </button>
                 </div>
@@ -419,7 +466,7 @@
                         </div>
                         <p id="upg-body-desc" class="text-[11px] text-gray-400 mt-1">Tukar fizikal badan (Biasa → Tegap → Sasa +Nyawa)</p>
                     </div>
-                    <button id="btn-upg-body" class="mt-3 w-full py-2 rounded-lg bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs cursor-pointer">
+                    <button id="btn-upg-body" class="mt-2.5 w-full py-2 rounded-lg bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs cursor-pointer">
                         Tukar Badan (4 💎)
                     </button>
                 </div>
@@ -427,35 +474,69 @@
         </div>
     </div>
 
-    <!-- LOBBY MENU -->
-    <div id="menu-screen" class="fixed inset-0 z-40 flex items-center justify-center bg-black/88 backdrop-blur-md safe-hud overflow-y-auto">
+    <!-- ========================================================= -->
+    <!-- LANGKAH 2: LOBI PILIH WATAK & CIPTA/MASUK BILIK           -->
+    <!-- ========================================================= -->
+    <div id="menu-screen" class="fixed inset-0 z-40 hidden flex items-center justify-center bg-black/88 backdrop-blur-md safe-hud overflow-y-auto">
         <div class="max-w-3xl w-full hud-panel rounded-2xl p-4 sm:p-6 md:p-8 border border-red-900/50 shadow-[0_0_90px_rgba(153,0,0,0.4)] my-auto max-h-[95dvh] overflow-y-auto">
-            <div class="text-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/80 border border-red-600/40 text-red-400 text-[10px] font-bold tracking-widest uppercase mb-1.5">
-                    <span>Cahaya Samar Seram • Tahap Semakin Sukar</span>
-                    <span class="text-cyan-300 font-mono">💎 <span id="lobby-diamond-count">0</span></span>
+            
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-white/15">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-lg bg-yellow-500/15 border border-yellow-400/50 text-yellow-300 font-mono font-black text-xs" id="lobby-player-id-badge">ID: UMR-0000</span>
+                    <span class="text-sm font-extrabold text-white" id="lobby-player-name-badge">Umar</span>
+                    <button type="button" id="switch-account-btn" class="text-[10px] text-gray-400 underline hover:text-red-400 cursor-pointer ml-1">Tukar ID</button>
                 </div>
-                <h1 class="font-horror text-xl sm:text-3xl md:text-5xl font-black text-white tracking-wider drop-shadow-[0_4px_20px_rgba(220,38,38,0.8)] leading-tight">
-                    MALAM BERSAMA UMAR<br>DI RUMAH HANTU
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-400/40 text-cyan-300 font-mono font-bold text-xs">💎 <span id="lobby-diamond-count">0</span></span>
+                    <button id="lobby-upgrade-btn" class="px-2.5 py-1 rounded-lg bg-cyan-800 hover:bg-cyan-700 text-white text-xs font-bold cursor-pointer">
+                        ⚡ Naik Taraf Aktor
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <h1 class="font-horror text-lg sm:text-3xl md:text-4xl font-black text-white tracking-wider drop-shadow-[0_4px_20px_rgba(220,38,38,0.8)] leading-tight">
+                    PILIH WATAK & BILIK PERMAINAN
                 </h1>
             </div>
 
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-                <div class="md:col-span-4">
-                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1">Nama Peserta</label>
-                    <input id="player-name-input" type="text" maxlength="14" placeholder="Masukkan nama anda..." 
-                           class="w-full px-3.5 py-2 rounded-xl bg-black/60 border border-white/20 text-white font-semibold focus:outline-none focus:border-red-500 text-sm">
-                </div>
-                <div class="md:col-span-4">
-                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1">Kapasiti Bilik</label>
-                    <div class="grid grid-cols-3 gap-1.5" id="room-size-selector">
-                        <button type="button" data-size="2" class="size-btn py-2 rounded-xl border border-red-500 bg-red-950/40 text-white font-bold text-xs cursor-pointer">👥 2</button>
-                        <button type="button" data-size="3" class="size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer">👥 3</button>
-                        <button type="button" data-size="4" class="size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer">👥 4</button>
+            <div class="mt-3">
+                <label class="block text-[11px] uppercase tracking-wider text-amber-300 font-bold mb-1.5">1. Pilih Watak Anda</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="character-grid">
+                    <div data-char="umar" class="char-card selected cursor-pointer rounded-xl p-2 border border-white/15 bg-white/5 text-center">
+                        <div class="text-xl">🔦</div>
+                        <div class="font-bold text-xs text-emerald-300">Umar (Ketua)</div>
+                        <div class="text-[9px] text-gray-400">Kelajuan Pantas • Hijau</div>
+                    </div>
+                    <div data-char="bomoh" class="char-card cursor-pointer rounded-xl p-2 border border-white/15 bg-white/5 text-center">
+                        <div class="text-xl">🧿</div>
+                        <div class="font-bold text-xs text-amber-300">Bomoh Muda</div>
+                        <div class="text-[9px] text-gray-400">+30% Kuasa • Emas</div>
+                    </div>
+                    <div data-char="penyiasat" class="char-card cursor-pointer rounded-xl p-2 border border-white/15 bg-white/5 text-center">
+                        <div class="text-xl">🕵️</div>
+                        <div class="font-bold text-xs text-sky-300">Penyiasat</div>
+                        <div class="text-[9px] text-gray-400">Suluh Jauh • Biru</div>
+                    </div>
+                    <div data-char="penjaga" class="char-card cursor-pointer rounded-xl p-2 border border-white/15 bg-white/5 text-center">
+                        <div class="text-xl">🏮</div>
+                        <div class="font-bold text-xs text-rose-300">Penjaga Vila</div>
+                        <div class="text-[9px] text-gray-400">Senyap • Merah</div>
                     </div>
                 </div>
-                <div class="md:col-span-4">
-                    <label class="block text-[11px] uppercase tracking-wider text-amber-400 font-bold mb-1">Tahap Kesukaran (Level)</label>
+            </div>
+
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1">2. Kapasiti Bilik (Pemain)</label>
+                    <div class="grid grid-cols-3 gap-1.5" id="room-size-selector">
+                        <button type="button" data-size="2" class="size-btn py-2 rounded-xl border border-red-500 bg-red-950/40 text-white font-bold text-xs cursor-pointer">👥 2 Pemain</button>
+                        <button type="button" data-size="3" class="size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer">👥 3 Pemain</button>
+                        <button type="button" data-size="4" class="size-btn py-2 rounded-xl border border-white/15 bg-white/5 text-gray-300 font-bold text-xs cursor-pointer">👥 4 Pemain</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-1">3. Tahap Kesukaran (Level)</label>
                     <select id="level-selector" class="w-full px-3 py-2 rounded-xl bg-black/70 border border-amber-500/50 text-amber-300 font-bold text-xs focus:outline-none cursor-pointer">
                         <option value="1">Tahap 1 — Malam Pertama (Normal)</option>
                         <option value="2">Tahap 2 — Bisikan Gelap (Sederhana)</option>
@@ -466,53 +547,22 @@
                 </div>
             </div>
 
-            <div class="mt-3">
-                <div class="flex items-center justify-between mb-1.5">
-                    <label class="block text-[11px] uppercase tracking-wider text-gray-400 font-bold">Pilih Karakter Anda</label>
-                    <button id="lobby-upgrade-btn" class="px-2.5 py-0.5 rounded-lg bg-cyan-950 border border-cyan-400/50 text-cyan-300 text-[10px] font-bold hover:bg-cyan-800 cursor-pointer">
-                        💎 Naik Taraf Aktor
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="character-grid">
-                    <div data-char="umar" class="char-card selected cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
-                        <div class="text-2xl">🔦</div>
-                        <div class="font-bold text-xs text-emerald-300">Umar (Ketua)</div>
-                        <div class="text-[9px] text-gray-400">Baju Hijau Zamrud</div>
-                    </div>
-                    <div data-char="bomoh" class="char-card cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
-                        <div class="text-2xl">🧿</div>
-                        <div class="font-bold text-xs text-amber-300">Bomoh Muda</div>
-                        <div class="text-[9px] text-gray-400">Baju Emas Diraja</div>
-                    </div>
-                    <div data-char="penyiasat" class="char-card cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
-                        <div class="text-2xl">🕵️</div>
-                        <div class="font-bold text-xs text-sky-300">Penyiasat</div>
-                        <div class="text-[9px] text-gray-400">Baju Biru Langit</div>
-                    </div>
-                    <div data-char="penjaga" class="char-card cursor-pointer rounded-xl p-2.5 border border-white/15 bg-white/5 text-center">
-                        <div class="text-2xl">🏮</div>
-                        <div class="font-bold text-xs text-rose-300">Penjaga Vila</div>
-                        <div class="text-[9px] text-gray-400">Baju Merah Delima</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="lobby-actions" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <button id="create-room-btn" class="py-3 px-4 rounded-xl bg-gradient-to-r from-red-800 via-red-600 to-red-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm md:text-base tracking-wider shadow-[0_0_25px_rgba(220,38,38,0.5)] transition-all cursor-pointer">
+            <div id="lobby-actions" class="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button id="create-room-btn" class="py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-800 via-red-600 to-red-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm tracking-wider shadow-[0_0_25px_rgba(220,38,38,0.5)] transition-all cursor-pointer">
                     ➕ CIPTA BILIK ONLINE
                 </button>
 
                 <div class="flex gap-2">
                     <input id="join-code-input" type="text" maxlength="5" placeholder="KOD BILIK" 
-                           class="w-full px-3 py-2.5 rounded-xl bg-black/60 border border-white/20 text-yellow-300 font-mono font-bold uppercase tracking-widest text-center text-sm focus:outline-none focus:border-yellow-400">
-                    <button id="join-room-btn" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs md:text-sm tracking-wider transition-all cursor-pointer shrink-0">
+                           class="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-yellow-300 font-mono font-bold uppercase tracking-widest text-center text-sm focus:outline-none focus:border-yellow-400">
+                    <button id="join-room-btn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-extrabold text-xs md:text-sm tracking-wider transition-all cursor-pointer shrink-0">
                         MASUK
                     </button>
                 </div>
             </div>
 
-            <div id="waiting-room-panel" class="hidden mt-4 p-3.5 rounded-xl bg-black/60 border border-yellow-500/40">
-                <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-white/10">
+            <div id="waiting-room-panel" class="hidden mt-3.5 p-3 rounded-xl bg-black/60 border border-yellow-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/10">
                     <div>
                         <span class="text-[10px] uppercase tracking-widest text-gray-400 block">Kod Bilik Kongsi Dengan Rakan</span>
                         <div class="flex items-center gap-2 mt-0.5">
@@ -526,19 +576,19 @@
                     </div>
                 </div>
 
-                <div id="waiting-players-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2.5"></div>
+                <div id="waiting-players-list" class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2"></div>
 
                 <div class="flex gap-2 mt-2">
-                    <button id="cancel-room-btn" class="px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs cursor-pointer">
+                    <button id="cancel-room-btn" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs cursor-pointer">
                         BATAL & PADAM BILIK
                     </button>
-                    <button id="start-match-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-600 hover:to-emerald-400 text-white font-horror font-bold text-sm md:text-base tracking-widest shadow-lg cursor-pointer">
+                    <button id="start-match-btn" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-600 hover:to-emerald-400 text-white font-horror font-bold text-sm tracking-widest shadow-lg cursor-pointer">
                         🚪 MASUK KE RUMAH AGAM
                     </button>
                 </div>
             </div>
 
-            <div class="mt-3 pt-2.5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+            <div class="mt-3 pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
                 <span id="firebase-badge">Status Pelayan: Menyambung Firebase...</span>
                 <button id="solo-bot-btn" class="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 font-semibold transition-all cursor-pointer">
                     🤖 Main Bersama Rakan AI
@@ -547,18 +597,18 @@
         </div>
     </div>
 
-    <!-- END SCREEN (DENGAN BUTANG TERUS KE TAHAP SETERUSNYA) -->
+    <!-- END SCREEN -->
     <div id="end-screen" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/92 backdrop-blur-lg safe-hud">
-        <div class="max-w-lg w-full hud-panel rounded-2xl p-6 text-center border border-white/15 shadow-2xl">
+        <div class="max-w-lg w-full hud-panel rounded-2xl p-5 sm:p-6 text-center border border-white/15 shadow-2xl">
             <div class="text-[10px] uppercase tracking-widest text-amber-400 font-bold mb-1" id="end-level-subtitle">Tahap 1 Selesai</div>
             <div id="end-icon" class="text-5xl mb-2">💀</div>
-            <h2 id="end-title" class="font-horror text-2xl md:text-4xl font-black text-red-500 tracking-wider uppercase">
+            <h2 id="end-title" class="font-horror text-xl md:text-4xl font-black text-red-500 tracking-wider uppercase">
                 TAMAT PERMAINAN
             </h2>
             <p id="cleanup-status-text" class="text-emerald-400 text-xs font-semibold mt-2">
                 🧹 Bilik online telah dipadamkan secara automatik dari pelayan.
             </p>
-            <div class="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex justify-around text-sm">
+            <div class="mt-3 p-3 rounded-xl bg-white/5 border border-white/10 flex justify-around text-sm">
                 <div>
                     <span class="text-gray-400 block text-xs">Masa Bertahan</span>
                     <span id="stat-time" class="font-bold text-white text-base">00:00</span>
@@ -572,18 +622,18 @@
                     <span id="stat-level" class="font-bold text-amber-400 text-base">LVL 1</span>
                 </div>
             </div>
-            <div class="mt-5 flex flex-col sm:flex-row gap-2.5">
-                <button id="next-level-btn" class="hidden w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-black font-horror font-black text-sm md:text-base tracking-wider shadow-lg transition-all cursor-pointer">
+            <div class="mt-4 flex flex-col sm:flex-row gap-2">
+                <button id="next-level-btn" class="hidden w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-black font-horror font-black text-sm tracking-wider shadow-lg transition-all cursor-pointer">
                     🔥 TERUS KE TAHAP SETERUSNYA
                 </button>
-                <button id="restart-btn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-gray-800 via-red-700 to-gray-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm md:text-base tracking-widest shadow-lg transition-all cursor-pointer">
+                <button id="restart-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-gray-800 via-red-700 to-gray-800 hover:from-red-700 hover:to-red-700 text-white font-horror font-bold text-sm tracking-widest shadow-lg transition-all cursor-pointer">
                     KEMBALI KE LOBI
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE + 3D THIRD-PERSON MULTIPLAYER + PROGRESSIVE LEVEL ENGINE -->
+    <!-- FIREBASE + REGISTRATION ID + 3D THIRD-PERSON MULTIPLAYER ENGINE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -593,13 +643,12 @@
         // 0. KONFIGURASI FIREBASE ANDA
         // ==========================================
         const MANUAL_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyCSzDovKMACk0jJQUMEF4_Y6YvcRNNLdxs",
-            authDomain: "ghosthunter-dc2c4.firebaseapp.com",
-            projectId: "ghosthunter-dc2c4",
-            storageBucket: "ghosthunter-dc2c4.firebasestorage.app",
-            messagingSenderId: "252977938004",
-            appId: "1:252977938004:web:693bbab90832620f0ef7c1",
-  measurementId: "G-77WSQC9VSK"
+            apiKey: "GANTI_DENGAN_API_KEY_ANDA",
+            authDomain: "projek-anda.firebaseapp.com",
+            projectId: "projek-anda",
+            storageBucket: "projek-anda.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
         };
 
         const appId = 'malam-bersama-umar-apk';
@@ -612,14 +661,17 @@
 
         async function initFirebase() {
             const badge = document.getElementById('firebase-badge');
+            const regBadge = document.getElementById('reg-firebase-status');
             try {
                 const configToUse = (typeof __firebase_config !== 'undefined' && __firebase_config)
                     ? JSON.parse(__firebase_config)
                     : MANUAL_FIREBASE_CONFIG;
 
                 if (!configToUse.apiKey || configToUse.apiKey.includes("GANTI_DENGAN")) {
-                    badge.textContent = "⚠️ Firebase belum dikonfigurasi (Mod AI Aktif)";
+                    badge.textContent = "⚠️ Firebase belum dikonfigurasi (Simpanan Tempatan)";
                     badge.className = "text-amber-400";
+                    regBadge.textContent = "⚠️ Mod Tempatan (ID Disimpan di Peranti)";
+                    regBadge.className = "text-amber-400";
                     return;
                 }
 
@@ -631,9 +683,13 @@
                 firebaseReady = true;
                 badge.textContent = "🟢 Firebase Online Bersambung";
                 badge.className = "text-emerald-400 font-semibold";
+                regBadge.textContent = "🟢 Pelayan Firebase Sedia";
+                regBadge.className = "text-emerald-400 font-semibold";
             } catch (err) {
-                badge.textContent = "🔴 Luar Talian (Mod Rakan AI Sedia)";
+                badge.textContent = "🔴 Luar Talian (Mod Tempatan Sedia)";
                 badge.className = "text-red-400";
+                regBadge.textContent = "🔴 Luar Talian (ID Tempatan Sedia)";
+                regBadge.className = "text-red-400";
                 firebaseReady = false;
             }
         }
@@ -663,7 +719,58 @@
         });
 
         // ==========================================
-        // 1. PROCEDURAL WEB AUDIO HORROR SYNTH
+        // 1. SISTEM PENDAFTARAN PEMAIN & PENJANA ID UNIK (UMR-XXXX)
+        // ==========================================
+        function generateUniquePlayerID() {
+            const num = Math.floor(1000 + Math.random() * 9000);
+            return `UMR-${num}`;
+        }
+
+        function getLocalAccounts() {
+            try {
+                return JSON.parse(localStorage.getItem('umar_registered_accounts') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveLocalAccount(profile) {
+            const accounts = getLocalAccounts();
+            accounts[profile.playerId] = profile;
+            localStorage.setItem('umar_registered_accounts', JSON.stringify(accounts));
+            localStorage.setItem('umar_active_player_id', profile.playerId);
+        }
+
+        async function saveProfileToCloud(profile) {
+            saveLocalAccount(profile);
+            if (!firebaseReady || !db) return;
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registered_players', profile.playerId);
+                await setDoc(userRef, profile, { merge: true });
+            } catch (e) {
+                console.warn("Simpan profil awan ditangguh:", e.message);
+            }
+        }
+
+        async function fetchProfileFromCloudOrLocal(playerId) {
+            const cleanId = playerId.trim().toUpperCase();
+            if (firebaseReady && db) {
+                try {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'registered_players', cleanId);
+                    const snap = await getDoc(userRef);
+                    if (snap.exists()) {
+                        const cloudData = snap.data();
+                        saveLocalAccount(cloudData);
+                        return cloudData;
+                    }
+                } catch (e) {}
+            }
+            const accounts = getLocalAccounts();
+            return accounts[cleanId] || null;
+        }
+
+        // ==========================================
+        // 2. PROCEDURAL WEB AUDIO HORROR SYNTH
         // ==========================================
         class HorrorAudio {
             constructor() {
@@ -794,7 +901,7 @@
         const audio = new HorrorAudio();
 
         // ==========================================
-        // 2. KARAKTER, WARNA BAJU UNIK & 5 SENJATA REALISTIK
+        // 3. KARAKTER, WARNA BAJU UNIK & 5 SENJATA REALISTIK
         // ==========================================
         const CHARACTERS = {
             umar: { id: 'umar', name: 'Umar (Ketua)', icon: '🔦', coatColor: 0x10b981, pantsColor: 0x1e293b, badgeHex: '#10b981', speedMult: 1.16, lightRange: 30, damageMult: 1.1, stealthMult: 0.92 },
@@ -825,24 +932,23 @@
             { id: 'titan', label: 'Sasa', widthScale: 1.38, heightScale: 1.08, bonusLives: 2 }
         ];
 
-        // Konfigurasi Tahap (Level Progresif — semakin tinggi level, semakin sukar!)
         function getLevelConfig(lvl) {
             const clampedLvl = Math.max(1, lvl);
             return {
                 level: clampedLvl,
-                ghostMaxHp: 100 + (clampedLvl - 1) * 45,          // HP hantu meningkat setiap tahap
-                ghostPatrolSpeed: 2.3 + (clampedLvl - 1) * 0.35,   // Rondaan lebih laju
-                ghostChaseSpeed: 4.0 + (clampedLvl - 1) * 0.42,    // Kejaran lebih pantas
-                detectBonus: (clampedLvl - 1) * 1.6,               // Jarak pengesanan hantu lebih jauh
-                stunDuration: Math.max(1.1, 2.4 - (clampedLvl - 1) * 0.25), // Tempoh stun lebih singkat
-                extraSpiritsCount: Math.min(6, 2 + clampedLvl),    // Bilangan kelibat hantu bertambah
-                fogDensity: Math.min(0.052, 0.036 + (clampedLvl - 1) * 0.003), // Kabus sedikit lebih pekat di tahap tinggi
-                clearRewardDiamonds: 3 + clampedLvl * 2            // Ganjaran berlian lebih lumayan
+                ghostMaxHp: 100 + (clampedLvl - 1) * 45,
+                ghostPatrolSpeed: 2.3 + (clampedLvl - 1) * 0.35,
+                ghostChaseSpeed: 4.0 + (clampedLvl - 1) * 0.42,
+                detectBonus: (clampedLvl - 1) * 1.6,
+                stunDuration: Math.max(1.1, 2.4 - (clampedLvl - 1) * 0.25),
+                extraSpiritsCount: Math.min(6, 2 + clampedLvl),
+                fogDensity: Math.min(0.052, 0.036 + (clampedLvl - 1) * 0.003),
+                clearRewardDiamonds: 3 + clampedLvl * 2
             };
         }
 
         // ==========================================
-        // 3. TEKSTUR (SURAM & ATMOSFERIK) + PETA RUMAH HANTU
+        // 4. TEKSTUR & PETA RUMAH HANTU
         // ==========================================
         function createProceduralTextures() {
             const wallCanvas = document.createElement('canvas');
@@ -893,34 +999,30 @@
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
         ];
 
-        const savedDiamonds = parseInt(localStorage.getItem('umar_horror_diamonds') || '3', 10);
-        const savedUpgrades = JSON.parse(localStorage.getItem('umar_horror_upgrades') || '{"outfit":1,"weapon":1,"strength":1,"body":0}');
-        const savedLevel = parseInt(localStorage.getItem('umar_horror_level') || '1', 10);
-
         const state = {
             isPlaying: false, isGameOver: false, isHost: true, isBotMode: false,
-            roomCode: 'SOLO', maxPlayers: 2, playerName: 'Umar', selectedChar: 'umar',
+            roomCode: 'SOLO', maxPlayers: 2,
+            registeredId: '', playerPin: '', playerName: 'Umar', selectedChar: 'umar',
             slotIndex: 0,
-            level: savedLevel,
+            level: 1,
             lives: 3, maxLives: 3, hasKey: false, weapon: 'none', attackCooldown: 0,
             isHiding: false, isCrouching: false, flashlightOn: true,
             stamina: 100, startTime: 0, invulnerableTimer: 0,
             spawnPos: new THREE.Vector3(), ghostSpawnPos: new THREE.Vector3(),
             ghostHp: 100, ghostMaxHp: 100, ghostStunTimer: 0, roomPlayers: {},
             cameraViewMode: 'full',
-            diamonds: savedDiamonds,
-            upgrades: savedUpgrades
+            diamonds: 3,
+            upgrades: { outfit: 1, weapon: 1, strength: 1, body: 0 }
         };
 
         // ==========================================
-        // 4. THREE.JS SCENE & PENCAHAYAAN SAMAR-SAMAR
+        // 5. THREE.JS SCENE & PENCAHAYAAN SAMAR-SAMAR
         // ==========================================
         const canvas = document.getElementById('game-canvas');
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        // Pendedahan diturunkan kepada 0.92 supaya kawasan agak gelap & samar-samar tetapi watak masih jelas
         renderer.toneMappingExposure = 0.92;
 
         const scene = new THREE.Scene();
@@ -948,7 +1050,6 @@
         window.visualViewport?.addEventListener('resize', syncViewportToScreen);
         syncViewportToScreen();
 
-        // Cahaya Persekitaran Samar-Samar (Dim Ambient)
         const hemiLight = new THREE.HemisphereLight(0x475569, 0x1c1917, 0.58);
         hemiLight.position.set(0, WALL_HEIGHT, 0);
         scene.add(hemiLight);
@@ -1228,13 +1329,11 @@
             rightBoot.position.set(0, -0.78, -0.03);
             rightLegPivot.add(rightBoot);
 
-            // Tanda Nama Terapung di atas kepala
             const charInfo = CHARACTERS[charId] || CHARACTERS.umar;
             const nameSprite = createFloatingNameTag(`${charInfo.icon} ${displayName}`, outfit.badgeHex, `Baju ${outfit.label} • ${tier.label}`);
             nameSprite.position.y = 2.15 * tier.heightScale;
             root.add(nameSprite);
 
-            // Aura cahaya lembut pada setiap peserta supaya badan peserta tetap jelas kelihatan walaupun lorong gelap
             const personalAuraLight = new THREE.PointLight(0xe2e8f0, 1.35, 9.5);
             personalAuraLight.position.set(0, 2.0, 0.45);
             root.add(personalAuraLight);
@@ -1306,7 +1405,6 @@
         const playerRig = createFullBodyCharacter('umar', 'Umar', 0, state.upgrades.body, state.upgrades.outfit);
         scene.add(playerRig.root);
 
-        // Lampu Suluh Utama (Suluhan jelas ke hadapan dalam gelap)
         const flashlight = new THREE.SpotLight(0xfffbeb, 4.8, 30, Math.PI / 4.0, 0.50, 1.15);
         flashlight.position.set(-0.30, 1.45, -0.25);
         playerRig.root.add(flashlight);
@@ -1316,7 +1414,7 @@
         scene.add(camera);
 
         // ==========================================
-        // 5. PEMBINAAN RUMAH AGAM + CAHAYA TANGGUNG SAMAR
+        // 6. PEMBINAAN RUMAH AGAM + PERABOT + KELIBAT HANTU
         // ==========================================
         const textures = createProceduralTextures();
         const wallBoxes = [], lockers = [], weaponPickups = [], diamondPickups = [], spiritApparitions = [];
@@ -1387,11 +1485,11 @@
 
         function spawnExtraSpiritApparitions(count = 3) {
             const spiritTemplates = [
-                { name: 'Kelibat Pontianak', color: 0xec4899, robeColor: 0xe2e8f0, x: 15, z: 25, type: 'float' },
-                { name: 'Kelibat Pocong', color: 0xa855f7, robeColor: 0xf8fafc, x: 55, z: 20, type: 'hop' },
-                { name: 'Bayang Penunggu', color: 0x38bdf8, robeColor: 0x1e293b, x: 35, z: 60, type: 'float' },
-                { name: 'Langsuir Malam', color: 0xf43f5e, robeColor: 0x3f3f46, x: 25, z: 55, type: 'float' },
-                { name: 'Toyol Lorong', color: 0x10b981, robeColor: 0x065f46, x: 60, z: 45, type: 'hop' },
+                { name: 'Pontianak', color: 0xec4899, robeColor: 0xe2e8f0, x: 15, z: 25, type: 'float' },
+                { name: 'Pocong', color: 0xa855f7, robeColor: 0xf8fafc, x: 55, z: 20, type: 'hop' },
+                { name: 'Penunggu', color: 0x38bdf8, robeColor: 0x1e293b, x: 35, z: 60, type: 'float' },
+                { name: 'Langsuir', color: 0xf43f5e, robeColor: 0x3f3f46, x: 25, z: 55, type: 'float' },
+                { name: 'Toyol', color: 0x10b981, robeColor: 0x065f46, x: 60, z: 45, type: 'hop' },
                 { name: 'Roh Bangsawan', color: 0xf59e0b, robeColor: 0x451a03, x: 45, z: 15, type: 'float' }
             ];
 
@@ -1549,7 +1647,6 @@
                             scene.add(canvasArt);
                         }
                     } else {
-                        // Cahaya tanglung siling malap (samar-samar) di simpang tertentu sahaja
                         if ((r + c) % 4 === 0 || cell === 2 || cell === 5 || cell === 6) {
                             const lanternBulb = new THREE.Mesh(
                                 new THREE.SphereGeometry(0.13, 10, 10),
@@ -1655,30 +1752,43 @@
             el.textContent = msg;
             el.classList.remove('hidden');
             clearTimeout(el._timer);
-            el._timer = setTimeout(() => el.classList.add('hidden'), 2600);
+            el._timer = setTimeout(() => el.classList.add('hidden'), 2400);
         }
 
         function updateLivesUI() {
             document.getElementById('lives-display').textContent = state.lives > 0 ? '❤️'.repeat(state.lives) : '💀';
         }
 
+        function persistCurrentAccountState() {
+            if (!state.registeredId) return;
+            const profile = {
+                playerId: state.registeredId,
+                name: state.playerName,
+                pin: state.playerPin,
+                diamonds: state.diamonds,
+                level: state.level,
+                upgrades: state.upgrades,
+                lastChar: state.selectedChar,
+                updatedAt: Date.now()
+            };
+            saveProfileToCloud(profile);
+        }
+
         function updateDiamondsUI() {
-            localStorage.setItem('umar_horror_diamonds', String(state.diamonds));
-            localStorage.setItem('umar_horror_upgrades', JSON.stringify(state.upgrades));
-            localStorage.setItem('umar_horror_level', String(state.level));
             document.getElementById('diamond-count-hud').textContent = state.diamonds;
             document.getElementById('modal-diamond-count').textContent = state.diamonds;
             document.getElementById('lobby-diamond-count').textContent = state.diamonds;
+            persistCurrentAccountState();
         }
 
         function updateGhostHpUI() {
             const pct = Math.max(0, Math.min(100, (state.ghostHp / state.ghostMaxHp) * 100));
             document.getElementById('ghost-hp-bar').style.width = `${pct}%`;
-            document.getElementById('ghost-hp-text').textContent = `${Math.round(state.ghostHp)}/${state.ghostMaxHp}`;
+            document.getElementById('ghost-hp-text').textContent = `${Math.round(state.ghostHp)}`;
         }
 
         // ==========================================
-        // 6. SISTEM NAIK TARAF AKTOR (UPGRADE)
+        // 7. SISTEM NAIK TARAF AKTOR (UPGRADE)
         // ==========================================
         function refreshUpgradeModalUI() {
             updateDiamondsUI();
@@ -1721,7 +1831,8 @@
                 updateLivesUI();
             }
 
-            refreshRigAppearance(playerRig, state.playerName, state.selectedChar, state.slotIndex, state.upgrades.body, state.upgrades.outfit);
+            const tagDisplay = state.registeredId ? `${state.playerName} [${state.registeredId}]` : state.playerName;
+            refreshRigAppearance(playerRig, tagDisplay, state.selectedChar, state.slotIndex, state.upgrades.body, state.upgrades.outfit);
             refreshUpgradeModalUI();
             syncStateToFirebase(true);
         }
@@ -1782,13 +1893,12 @@
             showToast(`💪 Fizikal bertukar kepada ${tier.label} (+Nyawa Maksimum)!`);
         });
 
-        document.getElementById('hud-upgrade-btn').addEventListener('click', openUpgradeModal);
         document.getElementById('lobby-upgrade-btn').addEventListener('click', openUpgradeModal);
         document.getElementById('btn-upgrade').addEventListener('touchstart', (e) => { e.preventDefault(); openUpgradeModal(); });
         document.getElementById('close-upgrade-btn').addEventListener('click', closeUpgradeModal);
 
         // ==========================================
-        // 7. ENTITI HANTU UTAMA (BERSKALA MENGIKUT LEVEL)
+        // 8. ENTITI HANTU UTAMA
         // ==========================================
         class GhostEntity {
             constructor() {
@@ -1812,7 +1922,7 @@
                 rightEye.position.set(0.16, 1.85, -0.32);
                 this.group.add(leftEye, rightEye);
 
-                const tag = createFloatingNameTag(`👹 PENUNGGU LVL ${state.level}`, '#ef4444');
+                const tag = createFloatingNameTag(`👹 PENUNGGU L${state.level}`, '#ef4444');
                 tag.position.y = 2.65;
                 this.group.add(tag);
 
@@ -1842,7 +1952,7 @@
 
                 if (state.ghostStunTimer > 0) {
                     state.ghostStunTimer -= dt;
-                    document.getElementById('ghost-state-label').textContent = '💫 Roh Terpegun!';
+                    document.getElementById('ghost-state-label').textContent = '💫 Terpegun';
                     return;
                 }
 
@@ -1864,7 +1974,7 @@
 
                 if (!state.isHiding && state.lives > 0 && distToPlayer < detectRange) {
                     this.state = 'CHASE';
-                    document.getElementById('ghost-state-label').textContent = `🔥 ROH MENGEJAR (LVL ${state.level})!`;
+                    document.getElementById('ghost-state-label').textContent = '🔥 Mengejar';
                     const dir = new THREE.Vector3(targetPlayerPos.x - this.group.position.x, 0, targetPlayerPos.z - this.group.position.z).normalize();
                     const nextPos = this.group.position.clone().addScaledVector(dir, lvlCfg.ghostChaseSpeed * dt);
                     if (!checkWallCollision(nextPos, 0.45)) this.group.position.copy(nextPos);
@@ -1875,7 +1985,7 @@
                     }
                 } else {
                     this.state = 'PATROL';
-                    document.getElementById('ghost-state-label').textContent = `👻 Roh Meronda (LVL ${state.level})`;
+                    document.getElementById('ghost-state-label').textContent = '👻 Meronda';
                     const toTarget = this.patrolTarget.clone().sub(this.group.position);
                     if (toTarget.length() < 1.0) {
                         this.patrolTarget = this.pickRandomCorridor();
@@ -1896,7 +2006,7 @@
                 const blockChance = (state.upgrades.outfit - 1) * 0.15;
                 if (Math.random() < blockChance) {
                     state.invulnerableTimer = 2.5;
-                    showToast('🛡️ Perisai Pakaian anda menangkis serangan hantu!');
+                    showToast('🛡️ Perisai menangkis serangan hantu!');
                     return;
                 }
 
@@ -1919,7 +2029,7 @@
                     if (!anyAlive) endGame(false);
                 } else {
                     this.group.position.copy(state.ghostSpawnPos);
-                    showToast(`Anda diserang! Baki nyawa: ${state.lives}`);
+                    showToast(`Diserang! Baki nyawa: ${state.lives}`);
                 }
             }
         }
@@ -1940,12 +2050,12 @@
                 updateDiamondsUI();
                 ghost.group.position.copy(state.ghostSpawnPos);
                 updateGhostHpUI();
-                showToast(`⚡ Roh jahat diusir! Ganjaran +${bonusDiamonds} 💎 Berlian!`);
+                showToast(`⚡ Roh diusir! +${bonusDiamonds} 💎`);
             }
         }
 
         // ==========================================
-        // 8. KAWALAN PEMAIN & KAMERA ORANG KETIGA
+        // 9. KAWALAN PEMAIN & KAMERA ORANG KETIGA
         // ==========================================
         const keys = {};
         let yaw = 0, pitch = 0.22;
@@ -2019,7 +2129,7 @@
             state.cameraViewMode = state.cameraViewMode === 'full' ? 'close' : 'full';
             const label = document.getElementById('camera-mode-label');
             if (label) {
-                label.textContent = state.cameraViewMode === 'full' ? '3RD PERSON: PENUH' : '3RD PERSON: DEKAT';
+                label.textContent = state.cameraViewMode === 'full' ? 'PENUH' : 'DEKAT';
             }
             showToast(state.cameraViewMode === 'full' ? '📷 Paparan Badan Penuh' : '📷 Paparan Bahu Dekat');
         }
@@ -2027,9 +2137,11 @@
         function toggleFlashlight() {
             state.flashlightOn = !state.flashlightOn;
             flashlight.intensity = state.flashlightOn ? 4.8 : 0;
-            document.getElementById('flashlight-status').innerHTML = state.flashlightOn
-                ? `<span class="text-yellow-400">🔦</span> <span class="text-gray-200">ON</span>`
-                : `<span class="text-gray-500">🔦</span> <span class="text-gray-500">OFF</span>`;
+            const flEl = document.getElementById('flashlight-status');
+            if (flEl) {
+                flEl.textContent = state.flashlightOn ? '🔦ON' : '🔦OFF';
+                flEl.className = state.flashlightOn ? 'font-bold text-yellow-300' : 'font-bold text-gray-500';
+            }
         }
 
         function toggleCrouch() {
@@ -2052,7 +2164,7 @@
                 const dist = playerPos.distanceTo(new THREE.Vector3(ghost.group.position.x, 0, ghost.group.position.z));
                 if (dist <= wInfo.range * weaponRangeMult) {
                     const dmg = Math.round(wInfo.damage * charDef.damageMult * weaponDmgMult);
-                    damageGhost(dmg, `⚔️ Serangan ${wInfo.name} mengenai roh (-${dmg} HP)!`);
+                    damageGhost(dmg, `⚔️ ${wInfo.name} (-${dmg} HP)`);
                 }
             }
         }
@@ -2066,7 +2178,7 @@
                     state.diamonds += 1;
                     audio.playDiamondChime();
                     updateDiamondsUI();
-                    showToast(`💎 +1 Berlian dikutip! (Jumlah: ${state.diamonds} 💎)`);
+                    showToast(`💎 +1 Berlian (${state.diamonds})`);
                 }
             }
 
@@ -2077,7 +2189,7 @@
 
             if (state.isHiding) {
                 promptEl.classList.remove('hidden');
-                textEl.textContent = 'Tekan [E] / AMBIL untuk keluar dari almari';
+                textEl.textContent = 'Tekan [E] / AMBIL untuk keluar';
                 return;
             }
 
@@ -2103,7 +2215,7 @@
                 if (playerPos.distanceTo(lk.position) < 2.3) {
                     nearbyInteractable = { type: 'locker', locker: lk };
                     promptEl.classList.remove('hidden');
-                    textEl.textContent = '🚪 Menyorok di dalam Almari';
+                    textEl.textContent = '🚪 Menyorok di Almari';
                     crossEl.classList.add('interactable');
                     return;
                 }
@@ -2112,7 +2224,7 @@
             if (exitDoorMesh && playerPos.distanceTo(new THREE.Vector3(exitDoorMesh.position.x, 0, exitDoorMesh.position.z)) < 3.0) {
                 nearbyInteractable = { type: 'exit' };
                 promptEl.classList.remove('hidden');
-                textEl.textContent = state.hasKey ? `🚪 BUKA PINTU KELUAR (TAHAP ${state.level})!` : '🔒 Pintu Berkunci (Cari Kunci Emas)';
+                textEl.textContent = state.hasKey ? '🚪 BUKA PINTU KELUAR!' : '🔒 Pintu Berkunci';
                 crossEl.classList.add('interactable');
                 return;
             }
@@ -2137,8 +2249,10 @@
                 scene.remove(keyLight);
                 keyMesh = null;
                 audio.playKeyPickup();
-                document.getElementById('key-status').innerHTML = `<span>🗝️</span> <span class="text-yellow-400">Ada!</span>`;
-                showToast('Kunci Emas dijumpai! Cari Pintu Keluar!');
+                const keyEl = document.getElementById('key-status');
+                keyEl.textContent = '🗝️Ada';
+                keyEl.className = 'font-bold text-yellow-400';
+                showToast('🗝️ Kunci Emas dijumpai!');
                 syncStateToFirebase(true);
             } else if (nearbyInteractable.type === 'weapon') {
                 const wp = nearbyInteractable.weapon;
@@ -2148,8 +2262,8 @@
                 state.weapon = wp.type;
                 updateCharacterWeaponMesh(playerRig, wp.type);
                 const wInfo = WEAPONS[wp.type];
-                document.getElementById('weapon-status').innerHTML = `<span>${wInfo.icon}</span> <span>${wInfo.name}</span>`;
-                showToast(`Senjata diperoleh: ${wInfo.name}`);
+                document.getElementById('weapon-status').textContent = wInfo.icon;
+                showToast(`Senjata: ${wInfo.name}`);
                 syncStateToFirebase(true);
             } else if (nearbyInteractable.type === 'locker') {
                 state.isHiding = true;
@@ -2161,7 +2275,7 @@
                     audio.playVictory();
                     endGame(true);
                 } else {
-                    showToast('Pintu berkunci rapat! Perlukan Kunci Emas.');
+                    showToast('Perlukan Kunci Emas!');
                 }
             }
         }
@@ -2267,7 +2381,7 @@
         }
 
         // ==========================================
-        // 9. RAKAN SEPASUKAN 3D & BOT AI
+        // 10. RAKAN SEPASUKAN 3D & BOT AI
         // ==========================================
         const remoteAvatars = {};
         const botTeammates = [];
@@ -2275,9 +2389,10 @@
         function getOrCreateRemoteAvatar(uid, playerData, slotIdx = 1) {
             if (remoteAvatars[uid]) return remoteAvatars[uid];
             const sIdx = playerData.slotIdx !== undefined ? playerData.slotIdx : slotIdx;
+            const idSuffix = playerData.registeredId ? ` [${playerData.registeredId}]` : '';
             const rig = createFullBodyCharacter(
                 playerData.char || 'bomoh',
-                playerData.name || 'Rakan',
+                `${playerData.name || 'Rakan'}${idSuffix}`,
                 sIdx,
                 playerData.bodyTier || 0,
                 playerData.outfitLvl || 1
@@ -2299,9 +2414,9 @@
 
         function spawnBotTeammates(count) {
             const botConfigs = [
-                { uid: 'bot_1', name: 'Aiman', char: 'penyiasat', slotIdx: 1, weapon: 'spear', bodyTier: 1 },
-                { uid: 'bot_2', name: 'Tok Aki', char: 'bomoh', slotIdx: 2, weapon: 'uv', bodyTier: 0 },
-                { uid: 'bot_3', name: 'Haziq', char: 'penjaga', slotIdx: 3, weapon: 'crossbow', bodyTier: 2 }
+                { uid: 'bot_1', registeredId: 'AI-101', name: 'Aiman', char: 'penyiasat', slotIdx: 1, weapon: 'spear', bodyTier: 1 },
+                { uid: 'bot_2', registeredId: 'AI-102', name: 'Tok Aki', char: 'bomoh', slotIdx: 2, weapon: 'uv', bodyTier: 0 },
+                { uid: 'bot_3', registeredId: 'AI-103', name: 'Haziq', char: 'penjaga', slotIdx: 3, weapon: 'crossbow', bodyTier: 2 }
             ];
             for (let i = 0; i < count; i++) {
                 const cfg = botConfigs[i];
@@ -2339,7 +2454,7 @@
         }
 
         // ==========================================
-        // 10. SINKRONISASI & AUTO-PADAM BILIK FIREBASE
+        // 11. SINKRONISASI & AUTO-PADAM BILIK FIREBASE
         // ==========================================
         let lastSyncTime = 0;
 
@@ -2352,6 +2467,7 @@
 
         function updateTeammatesHUD() {
             const listEl = document.getElementById('teammates-list');
+            if (!listEl) return;
             listEl.innerHTML = '';
             Object.values(state.roomPlayers).forEach((p, idx) => {
                 const sIdx = p.slotIdx !== undefined ? p.slotIdx : idx;
@@ -2360,9 +2476,9 @@
                 const wInfo = WEAPONS[p.weapon || 'none'];
                 const hearts = '❤️'.repeat(Math.max(0, p.lives ?? 3));
                 const row = document.createElement('div');
-                row.className = 'flex items-center justify-between gap-3 bg-white/5 px-2 py-1 rounded-lg border-l-4';
+                row.className = 'flex items-center justify-between gap-2 bg-white/5 px-2 py-0.5 rounded border-l-2';
                 row.style.borderColor = outfit.badgeHex;
-                row.innerHTML = `<span class="font-semibold text-gray-200 truncate max-w-[115px]">${cInfo.icon} ${p.name}</span><span class="text-[11px]">${wInfo.icon} ${hearts || '💀'}</span>`;
+                row.innerHTML = `<span class="font-semibold text-gray-200 truncate max-w-[110px]">${cInfo.icon} ${p.name}</span><span class="text-[10px]">${wInfo.icon}${hearts || '💀'}</span>`;
                 listEl.appendChild(row);
             });
         }
@@ -2372,8 +2488,6 @@
                 showToast('Sila masukkan konfigurasi Firebase anda terlebih dahulu!');
                 return;
             }
-            const nameInput = document.getElementById('player-name-input').value.trim();
-            state.playerName = nameInput || 'Umar';
             state.level = parseInt(document.getElementById('level-selector').value, 10) || 1;
             state.roomCode = generateRoomCode();
             state.isHost = true;
@@ -2381,7 +2495,7 @@
             roomDeleted = false;
 
             const myPlayerPayload = {
-                uid: currentUserId, name: state.playerName, char: state.selectedChar, slotIdx: 0,
+                uid: currentUserId, registeredId: state.registeredId, name: state.playerName, char: state.selectedChar, slotIdx: 0,
                 x: 5, z: 5, yaw: 0, lives: state.maxLives, weapon: 'none', flashlightOn: true, isHiding: false,
                 bodyTier: state.upgrades.body, outfitLvl: state.upgrades.outfit
             };
@@ -2408,8 +2522,6 @@
             const code = document.getElementById('join-code-input').value.trim().toUpperCase();
             if (code.length < 4) return showToast('Masukkan 4 huruf Kod Bilik!');
 
-            const nameInput = document.getElementById('player-name-input').value.trim();
-            state.playerName = nameInput || 'Rakan_' + Math.floor(10 + Math.random() * 89);
             state.roomCode = code;
             state.isHost = false;
             roomDeleted = false;
@@ -2424,7 +2536,7 @@
             state.slotIndex = existingCount % 4;
 
             const myPlayerPayload = {
-                uid: currentUserId, name: state.playerName, char: state.selectedChar, slotIdx: state.slotIndex,
+                uid: currentUserId, registeredId: state.registeredId, name: state.playerName, char: state.selectedChar, slotIdx: state.slotIndex,
                 x: 5, z: 5, yaw: 0, lives: state.maxLives, weapon: 'none', flashlightOn: true, isHiding: false,
                 bodyTier: state.upgrades.body, outfitLvl: state.upgrades.outfit
             };
@@ -2462,7 +2574,7 @@
                         const card = document.createElement('div');
                         card.className = 'p-2 rounded-xl bg-white/5 border text-center';
                         card.style.borderColor = outfit.badgeHex;
-                        card.innerHTML = `<div class="text-xl">${cInfo.icon}</div><div class="font-bold text-xs text-white truncate mt-1">${p.name}</div><div class="text-[9px]" style="color:${outfit.badgeHex}">Baju ${outfit.label}</div>`;
+                        card.innerHTML = `<div class="text-xl">${cInfo.icon}</div><div class="font-bold text-xs text-white truncate mt-1">${p.name}</div><div class="text-[9px] font-mono text-yellow-300">${p.registeredId || ''}</div><div class="text-[9px]" style="color:${outfit.badgeHex}">Baju ${outfit.label}</div>`;
                         list.appendChild(card);
                     });
                     if (data.status === 'playing') launchMatch(data.seed || 0);
@@ -2472,7 +2584,9 @@
                 if (data.hasKey && !state.hasKey) {
                     state.hasKey = true;
                     if (keyMesh) { scene.remove(keyMesh); scene.remove(keyLight); keyMesh = null; }
-                    document.getElementById('key-status').innerHTML = `<span>🗝️</span> <span class="text-yellow-400">Ada!</span>`;
+                    const keyEl = document.getElementById('key-status');
+                    keyEl.textContent = '🗝️Ada';
+                    keyEl.className = 'font-bold text-yellow-400';
                 }
 
                 if (data.victory && !state.isGameOver) {
@@ -2493,7 +2607,8 @@
                     if (avatar.lastBodyTier !== (pData.bodyTier || 0) || avatar.lastOutfitLvl !== (pData.outfitLvl || 1)) {
                         avatar.lastBodyTier = pData.bodyTier || 0;
                         avatar.lastOutfitLvl = pData.outfitLvl || 1;
-                        refreshRigAppearance(avatar.rig, pData.name, pData.char, pData.slotIdx ?? idx + 1, avatar.lastBodyTier, avatar.lastOutfitLvl);
+                        const idSuffix = pData.registeredId ? ` [${pData.registeredId}]` : '';
+                        refreshRigAppearance(avatar.rig, `${pData.name}${idSuffix}`, pData.char, pData.slotIdx ?? idx + 1, avatar.lastBodyTier, avatar.lastOutfitLvl);
                     }
                 });
 
@@ -2515,7 +2630,7 @@
                 const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode);
                 const updates = {
                     [`players.${currentUserId}`]: {
-                        uid: currentUserId, name: state.playerName, char: state.selectedChar, slotIdx: state.slotIndex,
+                        uid: currentUserId, registeredId: state.registeredId, name: state.playerName, char: state.selectedChar, slotIdx: state.slotIndex,
                         x: Number(playerPos.x.toFixed(2)), z: Number(playerPos.z.toFixed(2)),
                         yaw: Number(playerRig.root.rotation.y.toFixed(2)), lives: state.lives, weapon: state.weapon,
                         flashlightOn: state.flashlightOn, isHiding: state.isHiding,
@@ -2535,7 +2650,7 @@
         }
 
         // ==========================================
-        // 11. MULA & TAMAT PERMAINAN (SISTEM LEVEL PROGRESIF)
+        // 12. MULA & TAMAT PERMAINAN
         // ==========================================
         function launchMatch(seed = 0) {
             if (state.isPlaying) return;
@@ -2547,7 +2662,7 @@
             state.maxLives = 3 + tier.bonusLives;
             state.lives = state.maxLives;
 
-            document.getElementById('hud-level-badge').textContent = `LVL ${state.level}`;
+            document.getElementById('hud-level-badge').textContent = `🔥L${state.level}`;
 
             applyUpgradesToActor();
             buildMansion(seed + state.level);
@@ -2564,7 +2679,7 @@
             updateTeammatesHUD();
             state.isPlaying = true;
             state.startTime = performance.now();
-            showToast(`🔥 Tahap ${state.level} Bermula! Berhati-hati di dalam gelap...`);
+            showToast(`🔥 Tahap ${state.level} Bermula!`);
             if (!('ontouchstart' in window)) canvas.requestPointerLock?.();
         }
 
@@ -2579,7 +2694,7 @@
 
             if (isVictory) {
                 state.diamonds += lvlCfg.clearRewardDiamonds;
-                state.level += 1; // Naik ke tahap seterusnya secara automatik!
+                state.level += 1;
                 nextLevelBtn.classList.remove('hidden');
                 nextLevelBtn.textContent = `🔥 TERUS KE TAHAP ${state.level}`;
             } else {
@@ -2613,7 +2728,7 @@
             document.getElementById('end-icon').textContent = isVictory ? '🏆' : '💀';
             document.getElementById('end-title').textContent = isVictory ? 'PASUKAN BERJAYA KELUAR!' : 'PASUKAN TEWAS';
             document.getElementById('cleanup-status-text').textContent = isVictory
-                ? `🎉 Ganjaran +${lvlCfg.clearRewardDiamonds} 💎 Berlian! Tahap ${state.level} kini dibuka dengan cabaran lebih sukar!`
+                ? `🎉 Ganjaran +${lvlCfg.clearRewardDiamonds} 💎 Berlian disimpan ke ID ${state.registeredId}!`
                 : (state.isBotMode ? 'Cuba tingkatkan kelengkapan aktor dan ulang semula.' : '🧹 Bilik online telah dipadamkan secara automatik dari Firebase.');
 
             document.getElementById('hud').classList.add('hidden');
@@ -2658,23 +2773,151 @@
             renderer.render(scene, camera);
         }
 
-        // Event Listeners Lobi & Tahap
-        updateDiamondsUI();
-        const levelSelectEl = document.getElementById('level-selector');
-        if (levelSelectEl) {
-            // Pastikan pilihan level dalam dropdown menyokong level yang telah dibuka
-            if (state.level > 5) {
-                const opt = document.createElement('option');
-                opt.value = String(state.level);
-                opt.textContent = `Tahap ${state.level} — Azab Malam Tanpa Hujung (Ekstrem)`;
-                levelSelectEl.appendChild(opt);
-            }
-            levelSelectEl.value = String(state.level);
-            levelSelectEl.addEventListener('change', () => {
-                state.level = parseInt(levelSelectEl.value, 10) || 1;
-                updateDiamondsUI();
+        // ==========================================
+        // 13. PENGENDALI PENDAFTARAN & MASUK KE LOBI WATAK
+        // ==========================================
+        const charSlotMap = { umar: 0, bomoh: 1, penyiasat: 2, penjaga: 3 };
+
+        function enterCharacterLobbyWithProfile(profile) {
+            state.registeredId = profile.playerId;
+            state.playerName = profile.name;
+            state.playerPin = profile.pin;
+            state.diamonds = profile.diamonds ?? 3;
+            state.level = profile.level ?? 1;
+            state.upgrades = profile.upgrades || { outfit: 1, weapon: 1, strength: 1, body: 0 };
+            state.selectedChar = profile.lastChar || 'umar';
+            state.slotIndex = charSlotMap[state.selectedChar] ?? 0;
+
+            document.getElementById('lobby-player-id-badge').textContent = `ID: ${state.registeredId}`;
+            document.getElementById('lobby-player-name-badge').textContent = state.playerName;
+            document.getElementById('lobby-diamond-count').textContent = state.diamonds;
+
+            document.querySelectorAll('.char-card').forEach(c => {
+                c.classList.toggle('selected', c.dataset.char === state.selectedChar);
             });
+
+            const levelSelectEl = document.getElementById('level-selector');
+            if (levelSelectEl) {
+                if (state.level > 5 && !levelSelectEl.querySelector(`option[value="${state.level}"]`)) {
+                    const opt = document.createElement('option');
+                    opt.value = String(state.level);
+                    opt.textContent = `Tahap ${state.level} — Azab Malam Tanpa Hujung (Ekstrem)`;
+                    levelSelectEl.appendChild(opt);
+                }
+                levelSelectEl.value = String(state.level);
+            }
+
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
         }
+
+        const savedActiveId = localStorage.getItem('umar_active_player_id');
+        if (savedActiveId) {
+            const localAccounts = getLocalAccounts();
+            if (localAccounts[savedActiveId]) {
+                enterCharacterLobbyWithProfile(localAccounts[savedActiveId]);
+            }
+        }
+
+        document.getElementById('tab-new-register').addEventListener('click', () => {
+            document.getElementById('tab-new-register').className = 'py-2 rounded-lg bg-red-800 text-white font-bold text-xs cursor-pointer transition-all';
+            document.getElementById('tab-existing-login').className = 'py-2 rounded-lg text-gray-400 hover:text-white font-bold text-xs cursor-pointer transition-all';
+            document.getElementById('form-new-register').classList.remove('hidden');
+            document.getElementById('form-existing-login').classList.add('hidden');
+            document.getElementById('id-issued-card').classList.add('hidden');
+        });
+
+        document.getElementById('tab-existing-login').addEventListener('click', () => {
+            document.getElementById('tab-existing-login').className = 'py-2 rounded-lg bg-cyan-800 text-white font-bold text-xs cursor-pointer transition-all';
+            document.getElementById('tab-new-register').className = 'py-2 rounded-lg text-gray-400 hover:text-white font-bold text-xs cursor-pointer transition-all';
+            document.getElementById('form-existing-login').classList.remove('hidden');
+            document.getElementById('form-new-register').classList.add('hidden');
+            document.getElementById('id-issued-card').classList.add('hidden');
+        });
+
+        let newlyRegisteredProfile = null;
+        document.getElementById('form-new-register').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nameVal = document.getElementById('reg-name-input').value.trim();
+            const pinVal = document.getElementById('reg-pin-input').value.trim();
+            if (!nameVal || pinVal.length < 4) return;
+
+            const btn = document.getElementById('btn-submit-register');
+            btn.disabled = true;
+            btn.textContent = '⏳ MENJANA ID PESERTA...';
+
+            const newId = generateUniquePlayerID();
+            newlyRegisteredProfile = {
+                playerId: newId,
+                name: nameVal,
+                pin: pinVal,
+                diamonds: 3,
+                level: 1,
+                upgrades: { outfit: 1, weapon: 1, strength: 1, body: 0 },
+                lastChar: 'umar',
+                createdAt: Date.now()
+            };
+
+            await saveProfileToCloud(newlyRegisteredProfile);
+
+            btn.disabled = false;
+            btn.textContent = '🪪 DAFTAR & DAPATKAN ID PESERTA';
+
+            document.getElementById('issued-player-id').textContent = newId;
+            document.getElementById('issued-player-name').textContent = nameVal;
+            document.getElementById('id-issued-card').classList.remove('hidden');
+        });
+
+        document.getElementById('copy-player-id-btn').addEventListener('click', () => {
+            const idText = document.getElementById('issued-player-id').textContent;
+            navigator.clipboard?.writeText(idText);
+            document.getElementById('copy-player-id-btn').textContent = 'Disalin ✓';
+        });
+
+        document.getElementById('proceed-to-lobby-btn').addEventListener('click', () => {
+            if (newlyRegisteredProfile) {
+                enterCharacterLobbyWithProfile(newlyRegisteredProfile);
+            }
+        });
+
+        document.getElementById('form-existing-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const idVal = document.getElementById('login-id-input').value.trim().toUpperCase();
+            const pinVal = document.getElementById('login-pin-input').value.trim();
+
+            const btn = document.getElementById('btn-submit-login');
+            btn.disabled = true;
+            btn.textContent = '⏳ MENYEMAK ID...';
+
+            const profile = await fetchProfileFromCloudOrLocal(idVal);
+
+            btn.disabled = false;
+            btn.textContent = '🔓 LOG MASUK KE LOBI WATAK';
+
+            if (!profile) {
+                alert('ID Peserta tidak dijumpai. Sila semak semula ID atau daftar baru.');
+                return;
+            }
+            if (profile.pin !== pinVal) {
+                alert('Kod PIN salah! Sila cuba lagi.');
+                return;
+            }
+
+            localStorage.setItem('umar_active_player_id', profile.playerId);
+            enterCharacterLobbyWithProfile(profile);
+        });
+
+        document.getElementById('switch-account-btn').addEventListener('click', () => {
+            localStorage.removeItem('umar_active_player_id');
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.remove('hidden');
+        });
+
+        const levelSelectEl = document.getElementById('level-selector');
+        levelSelectEl?.addEventListener('change', () => {
+            state.level = parseInt(levelSelectEl.value, 10) || 1;
+            persistCurrentAccountState();
+        });
 
         document.querySelectorAll('.size-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -2684,26 +2927,24 @@
             });
         });
 
-        const charSlotMap = { umar: 0, bomoh: 1, penyiasat: 2, penjaga: 3 };
         document.querySelectorAll('.char-card').forEach(card => {
             card.addEventListener('click', () => {
                 document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
                 state.selectedChar = card.dataset.char;
                 state.slotIndex = charSlotMap[state.selectedChar] ?? 0;
+                persistCurrentAccountState();
             });
         });
 
         document.getElementById('create-room-btn').addEventListener('click', createOnlineRoom);
         document.getElementById('join-room-btn').addEventListener('click', joinOnlineRoom);
         document.getElementById('solo-bot-btn').addEventListener('click', () => {
-            const nameInput = document.getElementById('player-name-input').value.trim();
-            state.playerName = nameInput || 'Umar';
             state.level = parseInt(document.getElementById('level-selector').value, 10) || 1;
             state.isBotMode = true;
             state.roomCode = 'CO-OP AI';
             state.roomPlayers[currentUserId] = {
-                uid: currentUserId, name: state.playerName, char: state.selectedChar,
+                uid: currentUserId, registeredId: state.registeredId, name: state.playerName, char: state.selectedChar,
                 slotIdx: state.slotIndex, lives: state.maxLives, weapon: 'none'
             };
             launchMatch(Math.floor(Math.random() * 10));
