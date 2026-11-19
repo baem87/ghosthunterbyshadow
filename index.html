@@ -50,17 +50,19 @@ button, a, .btn {
             -webkit-user-select: none;
             -webkit-touch-callout: none;
         }
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100dvh;
-            overflow: hidden;
-            background-color: #05060a;
-            font-family: 'Inter', sans-serif;
-            color: #f3f4f6;
-            touch-action: none;
-        }
+       body, html {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    overflow: hidden;
+    background-color: #05060a;
+    font-family: 'Inter', sans-serif;
+    color: #f3f4f6;
+    touch-action: none;
+}
         input {
             user-select: text;
             -webkit-user-select: text;
@@ -68,15 +70,16 @@ button, a, .btn {
         .font-horror {
             font-family: 'Cinzel', serif;
         }
-        #game-canvas {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100dvh;
-            z-index: 1;
-            display: block;
-            filter: contrast(1.14) saturate(1.1) brightness(0.92);
-        }
+       #game-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1;
+    display: block;
+    filter: contrast(1.14) saturate(1.1) brightness(0.92);
+}
 
         .safe-hud {
             padding-top: max(6px, var(--safe-top));
