@@ -1033,32 +1033,33 @@ button, a, .btn {
         // ==========================================
         // 5. THREE.JS SCENE & PENCAHAYAAN SAMAR-SAMAR
         // ==========================================
-        const canvas = document.getElementById('game-canvas');
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.92;
+      const canvas = document.getElementById('game-canvas');
+const isApp = navigator.userAgent.includes("GhostHunterApp");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isApp, powerPreference: "high-performance" });
+renderer.shadowMap.enabled = !isApp;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.92;
 
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x06070c);
-        scene.fog = new THREE.FogExp2(0x07080e, 0.038);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x06070c);
+scene.fog = new THREE.FogExp2(0x07080e, 0.038);
 
-        const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.1, 80);
-        camera.rotation.order = 'YXZ';
+const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight);
+camera.rotation.order = 'YXZ';
 
-        function syncViewportToScreen() {
-            const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-            const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            const isLandscape = w > h;
+function syncViewportToScreen() {
+  const w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  const isLandscape = w > h;
 
-            camera.aspect = w / h;
-            camera.fov = isLandscape ? 68 : 80;
-            camera.updateProjectionMatrix();
+  camera.aspect = w / h;
+  camera.fov = isLandscape ? 68 : 80;
+  camera.updateProjectionMatrix();
 
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.setSize(w, h, false);
-        }
+  renderer.setPixelRatio(isApp ? 1 : Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(w, h, false);
+}
 
         window.addEventListener('resize', syncViewportToScreen);
         window.addEventListener('orientationchange', () => setTimeout(syncViewportToScreen, 120));
