@@ -2998,6 +2998,50 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
         });
 
         requestAnimationFrame(animate);
+        // --- JOYSTICK PUBG ---
+const joyZone = document.getElementById('joystick-zone');
+const joyKnob = document.getElementById('joystick-knob');
+let joyActive = false, joyId = null;
+let joyVec = { x: 0, y: 0 };
+function updateJoystickKeys() {
+  if (typeof keys !== 'undefined') {
+    keys['w'] = joyVec.y < -0.3;
+    keys['s'] = joyVec.y > 0.3;
+    keys['a'] = joyVec.x < -0.3;
+    keys['d'] = joyVec.x > 0.3;
+  }
+  window.joyMoveX = joyVec.x;
+  window.joyMoveY = joyVec.y;
+}
+if (joyZone) {
+  joyZone.addEventListener('touchstart', (e) => {
+    joyActive = true; joyId = e.changedTouches[0].identifier;
+    e.preventDefault();
+  }, { passive: false });
+  joyZone.addEventListener('touchmove', (e) => {
+    if (!joyActive) return;
+    for (let t of e.changedTouches) {
+      if (t.identifier === joyId) {
+        const rect = joyZone.getBoundingClientRect();
+        let dx = (t.clientX - (rect.left + rect.width/2)) / (rect.width/2);
+        let dy = (t.clientY - (rect.top + rect.height/2)) / (rect.height/2);
+        let len = Math.sqrt(dx*dx + dy*dy);
+        if (len > 1) { dx /= len; dy /= len; }
+        joyVec = { x: dx, y: dy };
+        joyKnob.style.transform = `translate(${dx*32}px, ${dy*32}px)`;
+        updateJoystickKeys();
+      }
+    }
+    e.preventDefault();
+  }, { passive: false });
+  const joyEnd = (e) => {
+    joyActive = false; joyVec = { x: 0, y: 0 };
+    joyKnob.style.transform = `translate(0px, 0px)`;
+    updateJoystickKeys();
+  };
+  joyZone.addEventListener('touchend', joyEnd);
+  joyZone.addEventListener('touchcancel', joyEnd);
+}
     </script>
 </body>
 </html>
