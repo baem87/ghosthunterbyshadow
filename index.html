@@ -3057,6 +3057,16 @@ joyZone.addEventListener('touchend',(e)=>{
   sendCode('KeyA',false); sendCode('KeyD',false); sendCode('KeyW',false); sendCode('KeyS',false);
 },{passive:false});
 </script>
+      <!-- BUTTON LOGOUT ATAS KANAN -->
+<button id="btnLogout" style="position:fixed; top:8px; right:10px; z-index:10000; background:#ff2d2d; color:white; border:2px solid white; border-radius:8px; padding:6px 12px; font-weight:bold; font-size:13px; cursor:pointer;">LOGOUT</button>
+document.getElementById('btnLogout').onclick = function(){
+  if(confirm('Nak logout ke?')){
+    localStorage.clear();
+    sessionStorage.clear();
+    location.reload();
+  }
+};
+</script>
 <!-- TAMAT JOYSTICK V4 -->
 </body>
 </html>
