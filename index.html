@@ -38,13 +38,33 @@ main, .container {
   padding-left: 6px !important;
   padding-right: 6px !important;
 }
-button, a, .btn {
+button:not(#btnLogoutFix), a, .btn {
   width: 100% !important;
   max-width: 100% !important;
   padding: 10px 8px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+        #btnLogoutFix{
+  width:80px !important;
+  max-width:80px !important;
+  height:32px !important;
+  min-height:0 !important;
+  display:flex !important;
+  position:fixed !important;
+  top:8px !important;
+  right:10px !important;
+  left:auto !important;
+  bottom:auto !important;
+  z-index:10000 !important;
+  background:#ff2d2d !important;
+  color:white !important;
+  border:2px solid white !important;
+  border-radius:8px !important;
+  padding:4px 0 !important;
+  font-size:12px !important;
+  font-weight:bold !important;
 }
             box-sizing: border-box;
             user-select: none;
@@ -3003,10 +3023,9 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
 
         requestAnimationFrame(animate);
     </script>
-<!-- JOYSTICK MOVE JE - V4 -->
-<div id="joyZone" style="display:none; position:fixed; left:15px; bottom:15px; width:90px; height:90px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.4); border-radius:50%; z-index:9999; touch-action:none;">
-  <div id="joyStick" style="position:absolute; left:25px; top:25px; width:40px; height:40px; background:white; border-radius:50%;"></div>
-</div>
+<<!-- JOYSTICK V4 -->
+<div id="joyStick" style="position:fixed !important; left:20px !important; bottom:20px !important; width:100px !important; height:100px !important; background:rgba(255,255,255,0.2) !important; border:2px solid white !important; border-radius:50% !important; z-index:9999 !important; display:block !important;"></div>
+<div id="joyKnob" style="position:fixed !important; left:55px !important; bottom:55px !important; width:30px !important; height:30px !important; background:white !important; border-radius:50% !important; z-index:10000 !important;"></div>
 
 <style>
   /* Sorok button gerak lama je, button kanan tembak / sprint / cam biar je */
@@ -3056,28 +3075,6 @@ joyZone.addEventListener('touchend',(e)=>{
   joyStick.style.left='25px'; joyStick.style.top='25px';
   sendCode('KeyA',false); sendCode('KeyD',false); sendCode('KeyW',false); sendCode('KeyS',false);
 },{passive:false});
-</script>
-     <!-- LOGOUT FIX PAKAI DIV -->
-<style>#btnLogoutFix{width:80px !important; height:28px !important; min-width:0 !important; max-width:80px !important; left:auto !important; right:10px !important; top:8px !important; bottom:auto !important; position:fixed !important; z-index:10000 !important; background:#ff2d2d !important; color:white !important; border:2px solid white !important; border-radius:8px !important; padding:5px 0 !important; text-align:center !important; font-weight:bold !important; font-size:12px !important; line-height:16px !important;}</style>
-<div id="btnLogoutFix">LOGOUT</div>
-<script>
-document.getElementById('btnLogoutFix').onclick = function(){
-  if(confirm('Nak logout ke?')){
-    localStorage.clear();
-    sessionStorage.clear();
-    location.reload();
-  }
-};
-// tunjuk logout HANYA bila dah masuk game, kat login sorok
-setInterval(()=>{
-  let b = document.getElementById('btnLogoutFix');
-  // kalau dah nampak nama player / dah masuk game, baru tunjuk
-  if(document.body.innerHTML.includes('Tester') || document.body.innerHTML.includes('UPGRADE') || localStorage.length > 0){
-    b.style.display = 'block';
-  } else {
-    b.style.display = 'none';
-  }
-},1000);
 </script>
 <!-- TAMAT JOYSTICK V4 -->
 </body>
