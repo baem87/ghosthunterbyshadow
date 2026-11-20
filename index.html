@@ -3019,29 +3019,33 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
   }
 </style>
 <!-- TAMAT SOROK BUTTON LAMA -->
- <!-- JOYSTICK V3 -->
-<div id="joyZone" style="display:none; position:fixed; left:15px; bottom:150px; width:110px; height:110px; background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.5); border-radius:50%; z-index:9999; touch-action:none;">
-  <div id="joyStick" style="position:absolute; left:30px; top:30px; width:50px; height:50px; background:white; border-radius:50%;"></div>
+<!-- JOYSTICK MOVE JE - V4 -->
+<div id="joyZone" style="display:none; position:fixed; left:20px; bottom:100px; width:120px; height:120px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.6); border-radius:50%; z-index:9999; touch-action:none;">
+  <div id="joyStick" style="position:absolute; left:35px; top:35px; width:50px; height:50px; background:white; border-radius:50%;"></div>
 </div>
-<div id="joyBtn" style="display:none; position:fixed; right:15px; bottom:150px; width:65px; height:65px; background:rgba(255,0,0,0.7); border-radius:50%; z-index:9999; color:white; text-align:center; line-height:65px; font-weight:bold; touch-action:none;">TEMBAK</div>
+
+<style>
+  /* Sorok button gerak lama je, button kanan tembak / sprint / cam biar je */
+  #btn-up, #btn-down, #btn-left, #btn-right { display:none !important; }
+</style>
 
 <script>
 let joyZone=document.getElementById('joyZone');
 let joyStick=document.getElementById('joyStick');
-let joyBtn=document.getElementById('joyBtn');
 let keysDown={};
+let isPhone = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 function isLogin(){
   let inputs=document.querySelectorAll('input');
   for(let i of inputs){ if(i.offsetParent!==null && (i.type==='password'||i.type==='email'||i.type==='text')) return true; }
   return false;
 }
 setInterval(()=>{
-  if(isLogin()){ joyZone.style.display='none'; joyBtn.style.display='none'; }
-  else { joyZone.style.display='block'; joyBtn.style.display='block'; }
+  if(!isPhone || isLogin()) joyZone.style.display='none';
+  else joyZone.style.display='block';
 },500);
-function sendKey(key, down){
-  if(down && !keysDown[key]){ window.dispatchEvent(new KeyboardEvent('keydown',{key:key})); keysDown[key]=true; }
-  if(!down && keysDown[key]){ window.dispatchEvent(new KeyboardEvent('keyup',{key:key})); keysDown[key]=false; }
+function sendCode(code, down){
+  if(down && !keysDown[code]){ window.dispatchEvent(new KeyboardEvent('keydown',{code:code, key:code.replace('Key','').toLowerCase()})); keysDown[code]=true; }
+  if(!down && keysDown[code]){ window.dispatchEvent(new KeyboardEvent('keyup',{code:code, key:code.replace('Key','').toLowerCase()})); keysDown[code]=false; }
 }
 function handleJoy(e){
   e.preventDefault();
@@ -3049,23 +3053,21 @@ function handleJoy(e){
   let r=joyZone.getBoundingClientRect();
   let dx=t.clientX-(r.left+r.width/2);
   let dy=t.clientY-(r.top+r.height/2);
-  dx=Math.max(-30,Math.min(30,dx));
-  dy=Math.max(-30,Math.min(30,dy));
-  joyStick.style.left=(30+dx)+'px';
-  joyStick.style.top=(30+dy)+'px';
-  sendKey('a', dx<-12); sendKey('d', dx>12);
-  sendKey('w', dy<-12); sendKey('s', dy>12);
+  dx=Math.max(-35,Math.min(35,dx));
+  dy=Math.max(-35,Math.min(35,dy));
+  joyStick.style.left=(35+dx)+'px';
+  joyStick.style.top=(35+dy)+'px';
+  sendCode('KeyA', dx<-12); sendCode('KeyD', dx>12);
+  sendCode('KeyW', dy<-12); sendCode('KeyS', dy>12);
 }
 joyZone.addEventListener('touchstart',handleJoy,{passive:false});
 joyZone.addEventListener('touchmove',handleJoy,{passive:false});
 joyZone.addEventListener('touchend',(e)=>{
   e.preventDefault();
-  joyStick.style.left='30px'; joyStick.style.top='30px';
-  sendKey('a',false); sendKey('d',false); sendKey('w',false); sendKey('s',false);
+  joyStick.style.left='35px'; joyStick.style.top='35px';
+  sendCode('KeyA',false); sendCode('KeyD',false); sendCode('KeyW',false); sendCode('KeyS',false);
 },{passive:false});
-joyBtn.addEventListener('touchstart',(e)=>{ e.preventDefault(); window.dispatchEvent(new KeyboardEvent('keydown',{key:' '})); },{passive:false});
-joyBtn.addEventListener('touchend',(e)=>{ e.preventDefault(); window.dispatchEvent(new KeyboardEvent('keyup',{key:' '})); },{passive:false});
 </script>
-<!-- TAMAT JOYSTICK V3 -->
+<!-- TAMAT JOYSTICK V4 -->
 </body>
 </html>
