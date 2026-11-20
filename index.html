@@ -3058,7 +3058,8 @@ joyZone.addEventListener('touchend',(e)=>{
 },{passive:false});
 </script>
      <!-- LOGOUT FIX PAKAI DIV -->
-<div id="btnLogoutFix" style="display:none; position:fixed !important; top:8px !important; right:10px !important; z-index:10000; background:#ff2d2d; color:white; border:2px solid white; border-radius:8px; padding:6px 12px; font-weight:bold; font-size:12px; cursor:pointer;">LOGOUT</div>
+<style>#btnLogoutFix{width:80px !important; height:28px !important; min-width:0 !important; max-width:80px !important; left:auto !important; right:10px !important; top:8px !important; bottom:auto !important; position:fixed !important; z-index:10000 !important; background:#ff2d2d !important; color:white !important; border:2px solid white !important; border-radius:8px !important; padding:5px 0 !important; text-align:center !important; font-weight:bold !important; font-size:12px !important; line-height:16px !important;}</style>
+<div id="btnLogoutFix">LOGOUT</div>
 <script>
 document.getElementById('btnLogoutFix').onclick = function(){
   if(confirm('Nak logout ke?')){
