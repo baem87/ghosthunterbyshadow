@@ -3017,13 +3017,8 @@ let joyZone=document.getElementById('joyZone');
 let joyStick=document.getElementById('joyStick');
 let keysDown={};
 let isPhone = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-function isLogin(){
-  let inputs=document.querySelectorAll('input');
-  for(let i of inputs){ if(i.offsetParent!==null && (i.type==='password'||i.type==='email'||i.type==='text')) return true; }
-  return false;
-}
 setInterval(()=>{
-  if(!isPhone || isLogin()) joyZone.style.display='none';
+  if(!isPhone) joyZone.style.display='none';
   else joyZone.style.display='block';
 },500);
 function sendCode(code, down){
