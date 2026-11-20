@@ -3002,55 +3002,53 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
 
         requestAnimationFrame(animate);
     </script>
-    <!-- JOYSTICK SELAMAT -->
-<div id="joyZone" style="display:none; position:fixed; left:20px; bottom:20px; width:120px; height:120px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.4); border-radius:50%; z-index:9999; touch-action:none;">
-  <div id="joyStick" style="position:absolute; left:35px; top:35px; width:50px; height:50px; background:white; border-radius:50%;"></div>
+ <!-- JOYSTICK V3 -->
+<div id="joyZone" style="display:none; position:fixed; left:15px; bottom:150px; width:110px; height:110px; background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.5); border-radius:50%; z-index:9999; touch-action:none;">
+  <div id="joyStick" style="position:absolute; left:30px; top:30px; width:50px; height:50px; background:white; border-radius:50%;"></div>
 </div>
-<div id="joyBtn" style="display:none; position:fixed; right:25px; bottom:40px; width:70px; height:70px; background:rgba(255,0,0,0.6); border-radius:50%; z-index:9999; color:white; text-align:center; line-height:70px; font-weight:bold;">TEMBAK</div>
+<div id="joyBtn" style="display:none; position:fixed; right:15px; bottom:150px; width:65px; height:65px; background:rgba(255,0,0,0.7); border-radius:50%; z-index:9999; color:white; text-align:center; line-height:65px; font-weight:bold; touch-action:none;">TEMBAK</div>
 
 <script>
-let joyZone = document.getElementById('joyZone');
-let joyStick = document.getElementById('joyStick');
-let joyBtn = document.getElementById('joyBtn');
-let joyActive = false;
-let joyX = 0, joyY = 0;
-
-// Tunjuk joystick bila game dah start - tukar ikut game kau
-// Kalau game kau guna id lain, bgtau aku
-setInterval(()=>{
-  let inGame = document.body.innerText.includes('SCORE') || document.body.innerText.includes('Score') || document.querySelector('canvas');
-  if(inGame){ joyZone.style.display='block'; joyBtn.style.display='block'; }
-},1000);
-
-function moveJoy(e){
-  let t = e.touches[0];
-  let r = joyZone.getBoundingClientRect();
-  let dx = t.clientX - (r.left + r.width/2);
-  let dy = t.clientY - (r.top + r.height/2);
-  dx = Math.max(-35, Math.min(35, dx));
-  dy = Math.max(-35, Math.min(35, dy));
-  joyStick.style.left = (35+dx)+'px';
-  joyStick.style.top = (35+dy)+'px';
-  joyX = dx/35; joyY = dy/35;
-  // Hantar ke game - simulasi WASD
-  window.joyX = joyX; window.joyY = joyY;
-  // Kalau game guna key, kita trigger key
-  if(dx < -15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'a'}));
-  if(dx > 15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'d'}));
-  if(dy < -15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'w'}));
-  if(dy > 15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'s'}));
+let joyZone=document.getElementById('joyZone');
+let joyStick=document.getElementById('joyStick');
+let joyBtn=document.getElementById('joyBtn');
+let keysDown={};
+function isLogin(){
+  let inputs=document.querySelectorAll('input');
+  for(let i of inputs){ if(i.offsetParent!==null && (i.type==='password'||i.type==='email'||i.type==='text')) return true; }
+  return false;
 }
-joyZone.addEventListener('touchstart', e=>{joyActive=true; moveJoy(e);});
-joyZone.addEventListener('touchmove', moveJoy);
-joyZone.addEventListener('touchend', ()=>{
-  joyStick.style.left='35px'; joyStick.style.top='35px';
-  window.joyX=0; window.joyY=0;
-});
-joyBtn.addEventListener('touchstart', ()=>{
-  window.dispatchEvent(new KeyboardEvent('keydown',{key:' '}));
-  window.dispatchEvent(new MouseEvent('click'));
-});
+setInterval(()=>{
+  if(isLogin()){ joyZone.style.display='none'; joyBtn.style.display='none'; }
+  else { joyZone.style.display='block'; joyBtn.style.display='block'; }
+},500);
+function sendKey(key, down){
+  if(down && !keysDown[key]){ window.dispatchEvent(new KeyboardEvent('keydown',{key:key})); keysDown[key]=true; }
+  if(!down && keysDown[key]){ window.dispatchEvent(new KeyboardEvent('keyup',{key:key})); keysDown[key]=false; }
+}
+function handleJoy(e){
+  e.preventDefault();
+  let t=e.touches[0];
+  let r=joyZone.getBoundingClientRect();
+  let dx=t.clientX-(r.left+r.width/2);
+  let dy=t.clientY-(r.top+r.height/2);
+  dx=Math.max(-30,Math.min(30,dx));
+  dy=Math.max(-30,Math.min(30,dy));
+  joyStick.style.left=(30+dx)+'px';
+  joyStick.style.top=(30+dy)+'px';
+  sendKey('a', dx<-12); sendKey('d', dx>12);
+  sendKey('w', dy<-12); sendKey('s', dy>12);
+}
+joyZone.addEventListener('touchstart',handleJoy,{passive:false});
+joyZone.addEventListener('touchmove',handleJoy,{passive:false});
+joyZone.addEventListener('touchend',(e)=>{
+  e.preventDefault();
+  joyStick.style.left='30px'; joyStick.style.top='30px';
+  sendKey('a',false); sendKey('d',false); sendKey('w',false); sendKey('s',false);
+},{passive:false});
+joyBtn.addEventListener('touchstart',(e)=>{ e.preventDefault(); window.dispatchEvent(new KeyboardEvent('keydown',{key:' '})); },{passive:false});
+joyBtn.addEventListener('touchend',(e)=>{ e.preventDefault(); window.dispatchEvent(new KeyboardEvent('keyup',{key:' '})); },{passive:false});
 </script>
-<!-- TAMAT JOYSTICK -->
+<!-- TAMAT JOYSTICK V3 -->
 </body>
 </html>
