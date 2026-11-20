@@ -318,28 +318,31 @@ button, a, .btn {
             </div>
         </div>
 
-        <div id="mobile-controls" class="flex justify-between items-end pointer-events-none fixed bottom-4 left-0 right-0 px-4 z-50">
-  <!-- JOYSTICK KIRI -->
-  <div id="joystick-zone" class="pointer-events-auto relative w-32 h-32">
-    <div id="joystick-base" class="absolute inset-0 rounded-full bg-white/10 border-2 border-white/20 backdrop-blur-sm flex items-center justify-center">
-      <div id="joystick-knob" class="w-14 h-14 rounded-full bg-white/40 border border-white/60 shadow-lg"></div>
-    </div>
-  </div>
+        <div id="mobile-controls" class="flex justify-between items-end pointer-events-auto">
+            <div id="dpad-grid" class="grid grid-cols-3 gap-1 w-28 h-28 sm:w-32 sm:h-32">
+                <div></div>
+                <button id="btn-up" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">▲</button>
+                <div></div>
+                <button id="btn-left" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">◀</button>
+                <button id="btn-down" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">▼</button>
+                <button id="btn-right" class="touch-btn rounded-lg flex items-center justify-center text-sm font-bold">▶</button>
+            </div>
 
-  <!-- BUTTON KANAN - KEKAL ID LAMA -->
-  <div class="flex flex-col gap-1 items-end pointer-events-auto">
-    <div class="flex gap-1">
-      <button id="btn-upgrade" class="touch-btn mobile-action-btn">UPGRADE</button>
-      <button id="btn-cam" class="touch-btn mobile-action-btn">CAM</button>
-      <button id="btn-flashlight" class="touch-btn mobile-action-btn">LAMPU</button>
-      <button id="btn-crouch" class="touch-btn mobile-action-btn">DUDUK</button>
+            <div class="flex flex-col gap-1 items-end">
+                <div class="flex gap-1">
+                    <button id="btn-upgrade" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-cyan-300 border-cyan-400/50">💎 UPGRADE</button>
+                    <button id="btn-cam" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-emerald-300">📷 VIEW</button>
+                    <button id="btn-flashlight" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-yellow-300">🔦 SULUH</button>
+                    <button id="btn-crouch" class="touch-btn mobile-action-btn px-2 py-1.5 rounded-lg text-[10px] font-bold text-blue-300">🧎 TUNDUK</button>
+                </div>
+                <div class="flex gap-1">
+                    <button id="btn-sprint" class="touch-btn mobile-action-btn px-2.5 py-2 rounded-lg text-[10px] font-bold text-emerald-300">⚡ LARI</button>
+                    <button id="btn-attack" class="touch-btn mobile-action-btn px-3 py-2 rounded-lg text-[10px] font-extrabold text-red-400 border-red-500/50">⚔️ SERANG</button>
+                    <button id="btn-interact" class="touch-btn mobile-action-btn px-3 py-2 rounded-lg text-[10px] font-extrabold text-yellow-400 border-yellow-400/50">🖐️ AMBIL</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="flex gap-1">
-      <button id="btn-sprint" class="touch-btn mobile-action-btn">LARI</button>
-      <button id="btn-interact" class="touch-btn mobile-action-btn">INTERACT</button>
-    </div>
-  </div>
-</div>
 
     <!-- SKRIN DAFTAR PEMAIN & JANA ID UNIK (UMR-XXXX) -->
     <div id="register-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-md safe-hud overflow-y-auto">
@@ -2998,50 +3001,6 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
         });
 
         requestAnimationFrame(animate);
-        // --- JOYSTICK PUBG ---
-const joyZone = document.getElementById('joystick-zone');
-const joyKnob = document.getElementById('joystick-knob');
-let joyActive = false, joyId = null;
-let joyVec = { x: 0, y: 0 };
-function updateJoystickKeys() {
-  if (typeof keys !== 'undefined') {
-    keys['w'] = joyVec.y < -0.3;
-    keys['s'] = joyVec.y > 0.3;
-    keys['a'] = joyVec.x < -0.3;
-    keys['d'] = joyVec.x > 0.3;
-  }
-  window.joyMoveX = joyVec.x;
-  window.joyMoveY = joyVec.y;
-}
-if (joyZone) {
-  joyZone.addEventListener('touchstart', (e) => {
-    joyActive = true; joyId = e.changedTouches[0].identifier;
-    e.preventDefault();
-  }, { passive: false });
-  joyZone.addEventListener('touchmove', (e) => {
-    if (!joyActive) return;
-    for (let t of e.changedTouches) {
-      if (t.identifier === joyId) {
-        const rect = joyZone.getBoundingClientRect();
-        let dx = (t.clientX - (rect.left + rect.width/2)) / (rect.width/2);
-        let dy = (t.clientY - (rect.top + rect.height/2)) / (rect.height/2);
-        let len = Math.sqrt(dx*dx + dy*dy);
-        if (len > 1) { dx /= len; dy /= len; }
-        joyVec = { x: dx, y: dy };
-        joyKnob.style.transform = `translate(${dx*32}px, ${dy*32}px)`;
-        updateJoystickKeys();
-      }
-    }
-    e.preventDefault();
-  }, { passive: false });
-  const joyEnd = (e) => {
-    joyActive = false; joyVec = { x: 0, y: 0 };
-    joyKnob.style.transform = `translate(0px, 0px)`;
-    updateJoystickKeys();
-  };
-  joyZone.addEventListener('touchend', joyEnd);
-  joyZone.addEventListener('touchcancel', joyEnd);
-}
     </script>
 </body>
 </html>
