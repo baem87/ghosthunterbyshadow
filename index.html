@@ -3057,15 +3057,26 @@ joyZone.addEventListener('touchend',(e)=>{
   sendCode('KeyA',false); sendCode('KeyD',false); sendCode('KeyW',false); sendCode('KeyS',false);
 },{passive:false});
 </script>
-      <!-- BUTTON LOGOUT ATAS KANAN -->
-<button id="btnLogout" style="position:fixed !important; top:8px !important; right:10px !important; left:auto !important; width:auto !important; max-width:90px !important; z-index:10000; background:#ff2d2d; color:white; border:2px solid white; border-radius:8px; padding:6px 10px; font-weight:bold; font-size:12px;">LOGOUT</button>
-document.getElementById('btnLogout').onclick = function(){
+     <!-- LOGOUT FIX PAKAI DIV -->
+<div id="btnLogoutFix" style="display:none; position:fixed !important; top:8px !important; right:10px !important; z-index:10000; background:#ff2d2d; color:white; border:2px solid white; border-radius:8px; padding:6px 12px; font-weight:bold; font-size:12px; cursor:pointer;">LOGOUT</div>
+<script>
+document.getElementById('btnLogoutFix').onclick = function(){
   if(confirm('Nak logout ke?')){
     localStorage.clear();
     sessionStorage.clear();
     location.reload();
   }
 };
+// tunjuk logout HANYA bila dah masuk game, kat login sorok
+setInterval(()=>{
+  let b = document.getElementById('btnLogoutFix');
+  // kalau dah nampak nama player / dah masuk game, baru tunjuk
+  if(document.body.innerHTML.includes('Tester') || document.body.innerHTML.includes('UPGRADE') || localStorage.length > 0){
+    b.style.display = 'block';
+  } else {
+    b.style.display = 'none';
+  }
+},1000);
 </script>
 <!-- TAMAT JOYSTICK V4 -->
 </body>
