@@ -22,6 +22,7 @@
             --safe-bottom: env(safe-area-inset-bottom, 0px);
             --safe-left: env(safe-area-inset-left, 0px);
             --safe-right: env(safe-area-inset-right, 0px);
+            canvas { filter: brightness(1.35) contrast(1.1) !important; }
         }
       /* FIX KOTAK LUAR KECIK */
 html, body {
@@ -3013,6 +3014,16 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
 </style>
 
 <script>
+    <!-- CAHAYA SAMAR - TERANG BALIK -->
+<div id="cahayaSamar" style="display:none; position:fixed; inset:0; pointer-events:none; z-index:9998; background:radial-gradient(circle at 50% 50%, rgba(255,255,220,0.18) 0%, rgba(255,255,220,0.05) 40%, rgba(0,0,0,0.45) 100%);"></div>
+<script>
+setInterval(()=>{
+  let c=document.getElementById('cahayaSamar');
+  // kalau kat phone baru tunjuk cahaya, kat PC jangan
+  if(window.innerWidth<900 || 'ontouchstart' in window) c.style.display='block';
+  else c.style.display='none';
+},500);
+</script>
 let joyZone=document.getElementById('joyZone');
 let joyStick=document.getElementById('joyStick');
 let keysDown={};
