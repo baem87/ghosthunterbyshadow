@@ -3002,6 +3002,23 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
 
         requestAnimationFrame(animate);
     </script>
+    <!-- SOROK BUTTON LAMA - GAME PHONE JE -->
+<style>
+  /* Sorok semua button kontrol lama yang dok kat bawah */
+  .mobile-controls, #mobileControls, #mobile-controls,
+  .dpad, #dpad, .controls, #controls,
+  .touch-controls, #touch-controls,
+  .btn-up, .btn-down, .btn-left, .btn-right,
+  .arrow-btn, .move-btn, .control-btn,
+  [id*="dpad"], [class*="dpad"],
+  [id*="mobile"], [class*="mobile-control"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>
+<!-- TAMAT SOROK BUTTON LAMA -->
  <!-- JOYSTICK V3 -->
 <div id="joyZone" style="display:none; position:fixed; left:15px; bottom:150px; width:110px; height:110px; background:rgba(255,255,255,0.12); border:2px solid rgba(255,255,255,0.5); border-radius:50%; z-index:9999; touch-action:none;">
   <div id="joyStick" style="position:absolute; left:30px; top:30px; width:50px; height:50px; background:white; border-radius:50%;"></div>
