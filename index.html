@@ -3003,8 +3003,8 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
         requestAnimationFrame(animate);
     </script>
 <!-- JOYSTICK MOVE JE - V4 -->
-<div id="joyZone" style="display:none; position:fixed; left:15px; bottom:140px; width:110px; height:110px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.4); border-radius:50%; z-index:9999; touch-action:none;">
-  <div id="joyStick" style="position:absolute; left:35px; top:35px; width:50px; height:50px; background:white; border-radius:50%;"></div>
+<div id="joyZone" style="display:none; position:fixed; left:15px; bottom:15px; width:90px; height:90px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.4); border-radius:50%; z-index:9999; touch-action:none;">
+  <div id="joyStick" style="position:absolute; left:25px; top:25px; width:40px; height:40px; background:white; border-radius:50%;"></div>
 </div>
 
 <style>
@@ -3031,10 +3031,10 @@ function handleJoy(e){
   let r=joyZone.getBoundingClientRect();
   let dx=t.clientX-(r.left+r.width/2);
   let dy=t.clientY-(r.top+r.height/2);
-  dx=Math.max(-35,Math.min(35,dx));
-  dy=Math.max(-35,Math.min(35,dy));
-  joyStick.style.left=(35+dx)+'px';
-  joyStick.style.top=(35+dy)+'px';
+  dx=Math.max(-25,Math.min(25,dx));
+  dy=Math.max(-25,Math.min(25,dy));
+  joyStick.style.left=(25+dx)+'px';
+  joyStick.style.top=(25+dy)+'px';
   sendCode('KeyA', dx<-12); sendCode('KeyD', dx>12);
   sendCode('KeyW', dy<-12); sendCode('KeyS', dy>12);
 }
@@ -3042,7 +3042,7 @@ joyZone.addEventListener('touchstart',handleJoy,{passive:false});
 joyZone.addEventListener('touchmove',handleJoy,{passive:false});
 joyZone.addEventListener('touchend',(e)=>{
   e.preventDefault();
-  joyStick.style.left='35px'; joyStick.style.top='35px';
+  joyStick.style.left='25px'; joyStick.style.top='25px';
   sendCode('KeyA',false); sendCode('KeyD',false); sendCode('KeyW',false); sendCode('KeyS',false);
 },{passive:false});
 </script>
