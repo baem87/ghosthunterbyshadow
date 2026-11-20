@@ -3058,7 +3058,7 @@ joyZone.addEventListener('touchend',(e)=>{
 },{passive:false});
 </script>
       <!-- BUTTON LOGOUT ATAS KANAN -->
-<button id="btnLogout" style="position:fixed; top:8px; right:10px; z-index:10000; background:#ff2d2d; color:white; border:2px solid white; border-radius:8px; padding:6px 12px; font-weight:bold; font-size:13px; cursor:pointer;">LOGOUT</button>
+<button id="btnLogout" style="position:fixed !important; top:8px !important; right:10px !important; left:auto !important; width:auto !important; max-width:90px !important; z-index:10000; background:#ff2d2d; color:white; border:2px solid white; border-radius:8px; padding:6px 10px; font-weight:bold; font-size:12px;">LOGOUT</button>
 document.getElementById('btnLogout').onclick = function(){
   if(confirm('Nak logout ke?')){
     localStorage.clear();
