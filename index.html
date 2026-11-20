@@ -3002,5 +3002,55 @@ setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', newId), {
 
         requestAnimationFrame(animate);
     </script>
+    <!-- JOYSTICK SELAMAT -->
+<div id="joyZone" style="display:none; position:fixed; left:20px; bottom:20px; width:120px; height:120px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.4); border-radius:50%; z-index:9999; touch-action:none;">
+  <div id="joyStick" style="position:absolute; left:35px; top:35px; width:50px; height:50px; background:white; border-radius:50%;"></div>
+</div>
+<div id="joyBtn" style="display:none; position:fixed; right:25px; bottom:40px; width:70px; height:70px; background:rgba(255,0,0,0.6); border-radius:50%; z-index:9999; color:white; text-align:center; line-height:70px; font-weight:bold;">TEMBAK</div>
+
+<script>
+let joyZone = document.getElementById('joyZone');
+let joyStick = document.getElementById('joyStick');
+let joyBtn = document.getElementById('joyBtn');
+let joyActive = false;
+let joyX = 0, joyY = 0;
+
+// Tunjuk joystick bila game dah start - tukar ikut game kau
+// Kalau game kau guna id lain, bgtau aku
+setInterval(()=>{
+  let inGame = document.body.innerText.includes('SCORE') || document.body.innerText.includes('Score') || document.querySelector('canvas');
+  if(inGame){ joyZone.style.display='block'; joyBtn.style.display='block'; }
+},1000);
+
+function moveJoy(e){
+  let t = e.touches[0];
+  let r = joyZone.getBoundingClientRect();
+  let dx = t.clientX - (r.left + r.width/2);
+  let dy = t.clientY - (r.top + r.height/2);
+  dx = Math.max(-35, Math.min(35, dx));
+  dy = Math.max(-35, Math.min(35, dy));
+  joyStick.style.left = (35+dx)+'px';
+  joyStick.style.top = (35+dy)+'px';
+  joyX = dx/35; joyY = dy/35;
+  // Hantar ke game - simulasi WASD
+  window.joyX = joyX; window.joyY = joyY;
+  // Kalau game guna key, kita trigger key
+  if(dx < -15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'a'}));
+  if(dx > 15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'d'}));
+  if(dy < -15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'w'}));
+  if(dy > 15) window.dispatchEvent(new KeyboardEvent('keydown',{key:'s'}));
+}
+joyZone.addEventListener('touchstart', e=>{joyActive=true; moveJoy(e);});
+joyZone.addEventListener('touchmove', moveJoy);
+joyZone.addEventListener('touchend', ()=>{
+  joyStick.style.left='35px'; joyStick.style.top='35px';
+  window.joyX=0; window.joyY=0;
+});
+joyBtn.addEventListener('touchstart', ()=>{
+  window.dispatchEvent(new KeyboardEvent('keydown',{key:' '}));
+  window.dispatchEvent(new MouseEvent('click'));
+});
+</script>
+<!-- TAMAT JOYSTICK -->
 </body>
 </html>
