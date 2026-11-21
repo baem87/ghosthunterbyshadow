@@ -25,7 +25,8 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 #joyBase{width:120px;height:120px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.45);border-radius:50%;position:relative}
 #joyKnob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;background:rgba(255,255,255,.9);border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,.5)}
 #touch-look-zone{position:fixed;right:0;top:0;width:55%;height:100%;z-index:4;touch-action:none}
-.hud-btn{width:56px!important;height:56px!important;border-radius:9999px!important;background:rgba(0,0,0,.55)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important;font-size:20px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.hud-btn{width:46px!important;height:46px!important;border-radius:9999px!important;background:rgba(0,0,0,.62)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important;font-size:18px!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.hud-btn:active{transform:scale(.92);background:rgba(255,255,255,.25)!important}
 </style>
 </head>
 <body>
@@ -34,34 +35,38 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 <div id="touch-look-zone"></div>
 
 <div id="hud" class="hidden fixed inset-0 z-[10] pointer-events-none">
-  <!-- KOTAK INFO KIRI ATAS + BUTANG LOGOUT RAPAT DI SEBELAHNYA -->
-  <div class="absolute top-2 left-2 flex items-start gap-1.5">
-    <div id="hud-info-box" class="bg-black/65 rounded-xl px-3 py-2 text-xs">
-      <div class="flex gap-2 items-center"><span id="hud-level-badge">🔥L1</span><span id="room-code-badge">SOLO</span><span id="camera-mode-label">PENUH</span></div>
-      <div class="mt-1">Nyawa: <span id="lives-display">❤️❤️❤️</span></div>
-      <div>💎 <span id="diamond-count-hud">3</span> | 🔑 <span id="key-status">Tiada</span> | 🔦 <span id="flashlight-status">🔦ON</span></div>
-      <div>Senjata: <span id="weapon-status">✋</span> | Stamina: <span id="stamina-text">100%</span></div>
-      <div class="w-32 bg-white/20 h-2 rounded mt-1"><div id="stamina-bar" class="bg-green-400 h-2 rounded" style="width:100%"></div></div>
-      <div class="mt-1">Hantu: <span id="ghost-state-label">👻 Meronda</span> HP <span id="ghost-hp-text">100</span></div>
-      <div class="w-32 bg-white/20 h-2 rounded"><div id="ghost-hp-bar" class="bg-red-500 h-2 rounded" style="width:100%"></div></div>
-      <div id="teammates-list" class="mt-1"></div>
+  <!-- PANEL KIRI ATAS: KOTAK INFO + LOGOUT + DUA LINE MENEGAK BUTTON -->
+  <div class="absolute top-2 left-2 flex flex-col items-start gap-2">
+    <div class="flex items-start gap-1.5">
+      <div id="hud-info-box" class="bg-black/65 rounded-xl px-3 py-2 text-xs">
+        <div class="flex gap-2 items-center"><span id="hud-level-badge">🔥L1</span><span id="room-code-badge">SOLO</span><span id="camera-mode-label">PENUH</span></div>
+        <div class="mt-1">Nyawa: <span id="lives-display">❤️❤️❤️</span></div>
+        <div>💎 <span id="diamond-count-hud">3</span> | 🔑 <span id="key-status">Tiada</span> | 🔦 <span id="flashlight-status">🔦ON</span></div>
+        <div>Senjata: <span id="weapon-status">✋</span> | Stamina: <span id="stamina-text">100%</span></div>
+        <div class="w-32 bg-white/20 h-2 rounded mt-1"><div id="stamina-bar" class="bg-green-400 h-2 rounded" style="width:100%"></div></div>
+        <div class="mt-1">Hantu: <span id="ghost-state-label">👻 Meronda</span> HP <span id="ghost-hp-text">100</span></div>
+        <div class="w-32 bg-white/20 h-2 rounded"><div id="ghost-hp-bar" class="bg-red-500 h-2 rounded" style="width:100%"></div></div>
+        <div id="teammates-list" class="mt-1"></div>
+      </div>
+      <button id="hud-logout-btn" class="logout-btn-hud">LOGOUT</button>
     </div>
-    <button id="hud-logout-btn" class="logout-btn-hud">LOGOUT</button>
+
+    <!-- DUA LINE MENEGAK UNTUK BUTTON DI SEBELAH KIRI -->
+    <div class="grid grid-cols-2 gap-1.5 pointer-events-auto">
+      <button id="btn-attack" class="hud-btn" title="Serang">⚔️</button>
+      <button id="btn-interact" class="hud-btn" title="Ambil / Guna">✋</button>
+      <button id="btn-flashlight" class="hud-btn" title="Lampu Suluh">🔦</button>
+      <button id="btn-crouch" class="hud-btn" title="Tunduk">🧎</button>
+      <button id="btn-cam" class="hud-btn" title="Tukar Kamera">📷</button>
+      <button id="btn-sprint" class="hud-btn" title="Lari Pecut">🏃</button>
+      <button id="btn-upgrade" class="hud-btn" title="Naik Taraf">⬆️</button>
+    </div>
   </div>
 
   <div id="ghost-warning" class="hidden absolute top-16 left-1/2 -translate-x-1/2 bg-red-700 px-3 py-1 rounded-full text-xs font-bold">⚠️ HANTU DEKAT!</div>
   <div id="interact-prompt" class="hidden absolute bottom-40 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-full text-sm"><span id="interact-text"></span></div>
   <div id="crosshair" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white/70 text-xl">+</div>
   <div id="hiding-indicator" class="hidden absolute top-24 left-1/2 -translate-x-1/2 bg-black/70 px-3 py-1 rounded-full text-xs">Menyorok...</div>
-  <div class="absolute right-3 bottom-3 flex flex-col gap-2 pointer-events-auto">
-    <button id="btn-attack" class="hud-btn">⚔️</button>
-    <button id="btn-interact" class="hud-btn">✋</button>
-    <button id="btn-flashlight" class="hud-btn">🔦</button>
-    <button id="btn-crouch" class="hud-btn">🧎</button>
-    <button id="btn-cam" class="hud-btn">📷</button>
-    <button id="btn-sprint" class="hud-btn">🏃</button>
-    <button id="btn-upgrade" class="hud-btn">⬆️</button>
-  </div>
   <button id="btn-up" class="hud-btn hidden">↑</button><button id="btn-down" class="hud-btn hidden">↓</button><button id="btn-left" class="hud-btn hidden">←</button><button id="btn-right" class="hud-btn hidden">→</button>
 </div>
 <div id="toast-msg" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-[50] bg-black/80 px-4 py-2 rounded-full text-sm"></div>
