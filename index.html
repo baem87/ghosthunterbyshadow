@@ -18,7 +18,7 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 @keyframes shake{0%{transform:translate(0)}25%{transform:translate(4px,-3px)}50%{transform:translate(-4px,3px)}75%{transform:translate(3px,2px)}100%{transform:translate(0)}}
 .char-card.selected{border-color:#ef4444!important;background:rgba(127,29,29,.4)!important}
 .active-touch{background:rgba(255,255,255,.35)!important}
-#btnLogoutFix{width:78px!important;height:32px!important;position:fixed!important;top:10px!important;right:10px!important;z-index:10001!important;background:#ff2d2d!important;color:#fff!important;border:2px solid #fff!important;border-radius:8px!important;font-size:12px!important;font-weight:bold!important;display:none!important;padding:0!important;align-items:center;justify-content:center;cursor:pointer}
+#display:noneFix{width:78px!important;height:32px!important;position:fixed!important;display:none!important;right:60px!important;z-index:10001!important;background:#ff2d2d!important;color:#fff!important;border:2px solid #fff!important;border-radius:8px!important;font-size:12px!important;font-weight:bold!important;display:none!important;padding:0!important;align-items:center;justify-content:center;cursor:pointer}
 #btn-up,#btn-down,#btn-left,#btn-right{display:none!important;visibility:hidden!important}
 #joyZone{position:fixed!important;left:18px!important;bottom:22px!important;width:120px!important;height:120px!important;z-index:99999!important;display:none!important;touch-action:none!important;pointer-events:auto!important}
 #joyBase{width:120px!important;height:120px!important;background:rgba(255,255,255,.12)!important;border:2px solid rgba(255,255,255,.45)!important;border-radius:50%!important;position:relative!important}
@@ -31,7 +31,7 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 <canvas id="game-canvas"></canvas>
 <div id="vignette" class="vignette-overlay"></div>
 <div id="touch-look-zone"></div>
-<button id="btnLogoutFix">LOGOUT</button>
+<button id="display:noneFix">LOGOUT</button>
 <div id="hud" class="hidden fixed inset-0 z-[10] pointer-events-none">
   <div class="absolute top-2 left-2 bg-black/60 rounded-xl px-3 py-2 text-xs">
     <div class="flex gap-2 items-center"><span id="hud-level-badge">🔥L1</span><span id="room-code-badge">SOLO</span><span id="camera-mode-label">PENUH</span></div>
@@ -255,8 +255,8 @@ requestAnimationFrame(animate);
   function end(){active=false;targetX=0;targetY=0;send('KeyW',false);send('KeyS',false);send('KeyA',false);send('KeyD',false)}
   zone.addEventListener('touchstart',e=>{active=true;move(e)},{passive:false});zone.addEventListener('touchmove',move,{passive:false});zone.addEventListener('touchend',end);zone.addEventListener('touchcancel',end);
   zone.addEventListener('mousedown',e=>{active=true;move({touches:[e]})});window.addEventListener('mousemove',e=>{if(active)move({touches:[e]})});window.addEventListener('mouseup',end);
-  setInterval(()=>{const inLogin=!document.getElementById('register-screen')?.classList.contains('hidden');const inGame=!document.getElementById('hud')?.classList.contains('hidden');zone.style.display=inGame?'block':'none';const lb=document.getElementById('btnLogoutFix');if(lb)lb.style.display=inLogin?'none':'flex';const c=document.getElementById('cahayaSamar');if(c)c.style.display=inGame?'block':'none'},300);
-  document.getElementById('btnLogoutFix').addEventListener('click',()=>{document.getElementById('switch-account-btn')?.click();if(!document.getElementById('hud')?.classList.contains('hidden')){localStorage.removeItem('umar_active_player_id');window.location.reload()}});
+  setInterval(()=>{const inLogin=!document.getElementById('register-screen')?.classList.contains('hidden');const inGame=!document.getElementById('hud')?.classList.contains('hidden');zone.style.display=inGame?setProperty('display', inGame?'block':'none', 'important');const lb=document.getElementById('display:noneFix');if(lb)lb.style.setProperty('display', inLogin?'none':'flex', 'important');const c=document.getElementById('cahayaSamar');if(c)c.style.display=inGame?'block':'none'},300);
+  document.getElementById('display:noneFix').addEventListener('click',()=>{document.getElementById('switch-account-btn')?.click();if(!document.getElementById('hud')?.classList.contains('hidden')){localStorage.removeItem('umar_active_player_id');window.location.reload()}});
 })();
 </script>
 </body>
