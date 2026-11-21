@@ -18,11 +18,12 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 @keyframes shake{0%{transform:translate(0)}25%{transform:translate(4px,-3px)}50%{transform:translate(-4px,3px)}75%{transform:translate(3px,2px)}100%{transform:translate(0)}}
 .char-card.selected{border-color:#ef4444!important;background:rgba(127,29,29,.4)!important}
 .active-touch{background:rgba(255,255,255,.35)!important}
-#display:noneFix{width:78px!important;height:32px!important;position:fixed!important;display:none!important;right:60px!important;z-index:10001!important;background:#ff2d2d!important;color:#fff!important;border:2px solid #fff!important;border-radius:8px!important;font-size:12px!important;font-weight:bold!important;display:none!important;padding:0!important;align-items:center;justify-content:center;cursor:pointer}
+#logoutBtnFix{width:82px;height:34px;position:fixed;top:12px;right:12px;z-index:100001;background:#dc2626;color:#fff;border:1.5px solid rgba(255,255,255,.85);border-radius:10px;font-size:11px;font-weight:800;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.6);letter-spacing:.5px}
+#logoutBtnFix:active{transform:scale(.95);background:#b91c1c}
 #btn-up,#btn-down,#btn-left,#btn-right{display:flex!important;visibility:hidden!important}
-#joyZone{position:fixed!important;left:18px!important;bottom:22px!important;width:120px!important;height:120px!important;z-index:99999!important;display:block!important;touch-action:none!important;pointer-events:auto!important}
-#joyBase{width:120px!important;height:120px!important;background:rgba(255,255,255,.12)!important;border:2px solid rgba(255,255,255,.45)!important;border-radius:50%!important;position:relative!important}
-#joyKnob{position:absolute!important;left:50%!important;top:50%!important;width:48px!important;height:48px!important;margin:-24px 0 0 -24px!important;background:rgba(255,255,255,.9)!important;border-radius:50%!important}
+#joyZone{position:fixed;left:18px;bottom:22px;width:120px;height:120px;z-index:99999;display:none;touch-action:none;pointer-events:auto}
+#joyBase{width:120px;height:120px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.45);border-radius:50%;position:relative}
+#joyKnob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;background:rgba(255,255,255,.9);border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,.5)}
 #touch-look-zone{position:fixed;right:0;top:0;width:55%;height:100%;z-index:4;touch-action:none}
 .hud-btn{width:56px!important;height:56px!important;border-radius:9999px!important;background:rgba(0,0,0,.55)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important;font-size:20px!important;display:flex!important;align-items:center!important;justify-content:center!important}
 </style>
@@ -31,7 +32,10 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 <canvas id="game-canvas"></canvas>
 <div id="vignette" class="vignette-overlay"></div>
 <div id="touch-look-zone"></div>
-<button id="display:noneFix">LOGOUT</button>
+
+<!-- BUTANG LOGOUT KANAN ATAS -->
+<button id="logoutBtnFix">LOGOUT</button>
+
 <div id="hud" class="hidden fixed inset-0 z-[10] pointer-events-none">
   <div class="absolute top-2 left-2 bg-black/60 rounded-xl px-3 py-2 text-xs">
     <div class="flex gap-2 items-center"><span id="hud-level-badge">🔥L1</span><span id="room-code-badge">SOLO</span><span id="camera-mode-label">PENUH</span></div>
@@ -62,34 +66,51 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
 <div id="jumpscare-flash" class="hidden fixed inset-0 z-[60] bg-red-600/60 pointer-events-none"></div>
 <div id="spectator-banner" class="hidden fixed top-32 left-1/2 -translate-x-1/2 z-[50] bg-black/80 px-4 py-2 rounded-full text-sm">Kamu tewas - Menonton...</div>
 <div id="locker-overlay" class="hidden fixed inset-0 z-[40] bg-black/90 flex items-center justify-center text-center p-6">Kamu menyorok dalam almari...<br>Tekan E / AMBIL untuk keluar</div>
+
+<!-- SKRIN DAFTAR / LOG MASUK -->
 <div id="register-screen" class="fixed inset-0 z-[100] bg-[#05060a] overflow-y-auto p-4">
   <div class="max-w-md mx-auto mt-6">
     <h1 class="font-horror text-3xl text-center text-red-500">MALAM BERSAMA UMAR<br><span class="text-lg text-white">DI RUMAH HANTU</span></h1>
     <p class="text-center text-xs text-gray-400 mt-2">Ghost Hunter 3D - Daftar / Login</p>
     <div class="grid grid-cols-2 gap-2 mt-4">
       <button id="tab-new-register" class="py-2 rounded-lg bg-red-800 font-bold text-xs">DAFTAR BARU</button>
-      <button id="tab-existing-login" class="py-2 rounded-lg text-gray-400 font-bold text-xs">LOG MASUK</button>
+      <button id="tab-existing-login" class="py-2 rounded-lg bg-white/10 text-gray-300 font-bold text-xs">LOG MASUK</button>
     </div>
     <form id="form-new-register" class="mt-4 bg-white/5 p-4 rounded-2xl border border-white/10">
-      <label class="text-xs">Nama</label><input id="reg-name-input" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white" placeholder="Nama">
-      <label class="text-xs mt-3 block">PIN (min 4)</label><input id="reg-pin-input" type="password" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white" placeholder="1234">
+      <label class="text-xs">Nama Pemain (Nombor akan dijana automatik)</label>
+      <input id="reg-name-input" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white" placeholder="Contoh: Umar">
+      <label class="text-xs mt-3 block">PIN (min 4 digit)</label>
+      <input id="reg-pin-input" type="password" inputmode="numeric" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white" placeholder="1234">
       <button id="btn-submit-register" class="w-full mt-4 py-3 bg-red-700 rounded-xl font-bold">🪪 DAFTAR & DAPATKAN ID PESERTA</button>
     </form>
     <form id="form-existing-login" class="hidden mt-4 bg-white/5 p-4 rounded-2xl border border-white/10">
-      <label class="text-xs">ID Peserta</label><input id="login-id-input" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white uppercase" placeholder="UMAR-XXXX">
-      <label class="text-xs mt-3 block">PIN</label><input id="login-pin-input" type="password" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white" placeholder="PIN">
+      <label class="text-xs">ID Peserta</label>
+      <input id="login-id-input" value="UMAR-" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white uppercase font-bold tracking-wider" placeholder="UMAR-XXXX">
+      <label class="text-xs mt-3 block">PIN</label>
+      <input id="login-pin-input" type="password" inputmode="numeric" class="w-full mt-1 p-3 rounded-xl bg-black/60 border border-white/20 text-white" placeholder="PIN">
       <button id="btn-submit-login" class="w-full mt-4 py-3 bg-cyan-700 rounded-xl font-bold">🔓 LOG MASUK KE LOBI WATAK</button>
     </form>
     <div id="id-issued-card" class="hidden mt-4 bg-yellow-900/30 border border-yellow-500 p-4 rounded-2xl text-center">
-      <div class="text-xs">ID KAMU:</div><div id="issued-player-id" class="font-bold text-xl text-yellow-300">-</div><div id="issued-player-name" class="text-sm"></div>
-      <button id="copy-player-id-btn" class="mt-2 w-full py-2 bg-white/10 rounded-lg text-xs">Salin ID</button>
+      <div class="text-xs text-yellow-200">ID PESERTA KAMU:</div>
+      <div id="issued-player-id" class="font-bold text-2xl text-yellow-300 mt-1">-</div>
+      <div class="text-xs text-gray-300 mt-1">Nama Auto-Jana:</div>
+      <div id="issued-player-name" class="text-base font-bold text-white">-</div>
+      <button id="copy-player-id-btn" class="mt-3 w-full py-2 bg-white/10 rounded-lg text-xs font-semibold">Salin ID</button>
       <button id="proceed-to-lobby-btn" class="mt-2 w-full py-3 bg-green-700 rounded-xl font-bold">MASUK LOBI →</button>
     </div>
   </div>
 </div>
-<div id="menu-screen" class="hidden fixed inset-0 z-[90] bg-[#05060a]/95 overflow-y-auto p-4">
+
+<!-- SKRIN LOBI WATAK -->
+<div id="menu-screen" class="hidden fixed inset-0 z-[90] bg-[#05060a]/95 overflow-y-auto p-4 pt-12">
   <div class="max-w-md mx-auto">
-    <div class="flex justify-between items-center"><div><div id="lobby-player-name-badge" class="font-bold">Umar</div><div id="lobby-player-id-badge" class="text-xs text-yellow-300">ID: -</div></div><div>💎 <span id="lobby-diamond-count">3</span></div></div>
+    <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/10">
+      <div>
+        <div id="lobby-player-name-badge" class="font-bold text-base">Umar #1001</div>
+        <div id="lobby-player-id-badge" class="text-xs text-yellow-300 font-semibold">ID: UMAR-1001</div>
+      </div>
+      <div class="text-lg font-bold">💎 <span id="lobby-diamond-count">3</span></div>
+    </div>
     <h2 class="font-horror text-2xl mt-3">PILIH WATAK</h2>
     <div class="grid grid-cols-2 gap-2 mt-2">
       <div class="char-card selected p-3 rounded-xl border border-white/20 bg-white/5 cursor-pointer" data-char="umar">🔦 Umar (Ketua)</div>
@@ -97,8 +118,8 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
       <div class="char-card p-3 rounded-xl border border-white/20 bg-white/5 cursor-pointer" data-char="penyiasat">🕵️ Penyiasat</div>
       <div class="char-card p-3 rounded-xl border border-white/20 bg-white/5 cursor-pointer" data-char="penjaga">🏮 Penjaga Vila</div>
     </div>
-    <div class="mt-3">Tahap: <select id="level-selector" class="bg-black border border-white/20 rounded-lg p-2 text-white w-full"><option value="1">Tahap 1</option><option value="2">Tahap 2</option><option value="3">Tahap 3</option><option value="4">Tahap 4</option><option value="5">Tahap 5</option></select></div>
-    <div class="mt-3">Saiz Bilik: <div class="flex gap-2 mt-1"><button class="size-btn py-2 flex-1 rounded-xl border border-white/15 bg-white/5 text-xs font-bold" data-size="2">2 Orang</button><button class="size-btn py-2 flex-1 rounded-xl border border-white/15 bg-white/5 text-xs font-bold" data-size="3">3 Orang</button><button class="size-btn py-2 flex-1 rounded-xl border border-white/15 bg-white/5 text-xs font-bold" data-size="4">4 Orang</button></div></div>
+    <div class="mt-3">Tahap: <select id="level-selector" class="bg-black border border-white/20 rounded-lg p-2 text-white w-full mt-1"><option value="1">Tahap 1</option><option value="2">Tahap 2</option><option value="3">Tahap 3</option><option value="4">Tahap 4</option><option value="5">Tahap 5</option></select></div>
+    <div class="mt-3">Saiz Bilik: <div class="flex gap-2 mt-1"><button class="size-btn py-2 flex-1 rounded-xl border border-red-500 bg-red-950/40 text-white text-xs font-bold" data-size="2">2 Orang</button><button class="size-btn py-2 flex-1 rounded-xl border border-white/15 bg-white/5 text-xs font-bold" data-size="3">3 Orang</button><button class="size-btn py-2 flex-1 rounded-xl border border-white/15 bg-white/5 text-xs font-bold" data-size="4">4 Orang</button></div></div>
     <div id="lobby-actions" class="mt-4 space-y-2">
       <button id="solo-bot-btn" class="w-full py-3 bg-green-700 rounded-xl font-bold">🤖 MAIN SOLO + BOT</button>
       <button id="create-room-btn" class="w-full py-3 bg-red-700 rounded-xl font-bold">Buat Bilik Online</button>
@@ -114,6 +135,8 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
     </div>
   </div>
 </div>
+
+<!-- MODAL NAIK TARAF -->
 <div id="upgrade-modal" class="hidden fixed inset-0 z-[110] bg-black/80 flex items-center justify-center p-4">
   <div class="bg-zinc-900 w-full max-w-md rounded-2xl p-4">
     <div class="flex justify-between"><h3 class="font-bold">NAIK TARAF</h3><button id="close-upgrade-btn">✕</button></div>
@@ -126,6 +149,8 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
     </div>
   </div>
 </div>
+
+<!-- SKRIN TAMAT -->
 <div id="end-screen" class="hidden fixed inset-0 z-[120] bg-black/90 flex items-center justify-center p-4">
   <div class="text-center max-w-md w-full">
     <div id="end-icon" class="text-6xl">🏆</div><h2 id="end-title" class="font-horror text-3xl mt-2">PASUKAN BERJAYA</h2><div id="end-level-subtitle" class="text-sm text-gray-300 mt-1"></div>
@@ -135,13 +160,15 @@ html,body{margin:0;padding:0;width:100vw;height:100vh;height:100dvh;overflow:hid
     <button id="restart-btn" class="w-full mt-2 py-3 bg-red-700 rounded-xl font-bold">MAIN SEMULA</button>
   </div>
 </div>
+
 <div id="cahayaSamar" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:8;background:radial-gradient(circle at 50% 50%,rgba(255,255,220,.12) 0%,rgba(0,0,0,.35) 100%)"></div>
 <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+
 <script>
 let currentUserId='user_'+Math.floor(Math.random()*999999);
 function getLocalAccounts(){try{return JSON.parse(localStorage.getItem('umar_accounts')||'{}')}catch(e){return {}}}
 function saveLocalAccounts(a){localStorage.setItem('umar_accounts',JSON.stringify(a))}
-function generateUniquePlayerID(){return 'UMAR-'+Math.floor(1000+Math.random()*9000)}
+function generateUniqueNumber(){return Math.floor(1000+Math.random()*9000)}
 async function saveProfileToCloud(p){const a=getLocalAccounts();a[p.playerId]=p;saveLocalAccounts(a);if(p.playerId)localStorage.setItem('umar_active_player_id',p.playerId)}
 async function fetchProfileFromCloudOrLocal(id){return getLocalAccounts()[id]||null}
 async function cleanupFirebaseRoom(){}
@@ -210,7 +237,7 @@ function toggleCameraView(){state.cameraViewMode=state.cameraViewMode==='full'?'
 function toggleFlashlight(){state.flashlightOn=!state.flashlightOn;flashlight.intensity=state.flashlightOn?4.8:0;const f=document.getElementById('flashlight-status');if(f)f.textContent=state.flashlightOn?'🔦ON':'🔦OFF'}
 function toggleCrouch(){if(!state.isHiding)state.isCrouching=!state.isCrouching}
 function performAttack(){if(state.attackCooldown>0||state.isHiding||state.lives<=0)return;const w=WEAPONS[state.weapon],cd=CHARACTERS[state.selectedChar]||CHARACTERS.umar,dm=1+(state.upgrades.weapon-1)*.25,rm=1+(state.upgrades.weapon-1)*.15;state.attackCooldown=w.cooldown;audio.playWeaponAttack(state.weapon);playerRig.attackSwing=1;if(ghost){const d=playerPos.distanceTo(new THREE.Vector3(ghost.group.position.x,0,ghost.group.position.z));if(d<=w.range*rm){const dmg=Math.round(w.damage*cd.damageMult*dm);damageGhost(dmg,'⚔️ '+w.name+' (-'+dmg+' HP)')}}}
-function checkNearbyInteractables(){for(const dm of diamondPickups){if(dm.active&&playerPos.distanceTo(dm.position)<1.75){dm.active=false;dm.mesh.visible=false;dm.light.intensity=0;state.diamonds+=1;audio.playDiamondChime();updateDiamondsUI();showToast('💎 +1 ('+state.diamonds+')')}}const p=document.getElementById('interact-prompt'),t=document.getElementById('interact-text'),c=document.getElementById('crosshair');nearbyInteractable=null;if(state.isHiding){p.classList.remove('hidden');t.textContent='Tekan [E] / AMBIL untuk keluar';return}if(keyMesh&&playerPos.distanceTo(new THREE.Vector3(keyMesh.position.x,0,keyMesh.position.z))<2.5){nearbyInteractable={type:'key'};p.classList.remove('hidden');t.textContent='🗝️ Ambil Kunci Emas';return}for(const wp of weaponPickups){if(wp.active&&playerPos.distanceTo(wp.position)<2.4){nearbyInteractable={type:'weapon',weapon:wp};p.classList.remove('hidden');t.textContent=WEAPONS[wp.type].icon+' Ambil '+WEAPONS[wp.type].name;return}}for(const lk of lockers){if(playerPos.distanceTo(lk.position)<2.3){nearbyInteractable={type:'locker',locker:lk};p.classList.remove('hidden');t.textContent='🚪 Menyorok di Almari';return}}if(exitDoorMesh&&playerPos.distanceTo(new THREE.Vector3(exitDoorMesh.position.x,0,exitDoorMesh.position.z))<3){nearbyInteractable={type:'exit'};p.classList.remove('hidden');t.textContent=state.hasKey?'🚪 BUKA PINTU KELUAR!':'🔒 Pintu Berkunci';return}p.classList.add('hidden')}
+function checkNearbyInteractables(){for(const dm of diamondPickups){if(dm.active&&playerPos.distanceTo(dm.position)<1.75){dm.active=false;dm.mesh.visible=false;dm.light.intensity=0;state.diamonds+=1;audio.playDiamondChime();updateDiamondsUI();showToast('💎 +1 ('+state.diamonds+')')}}const p=document.getElementById('interact-prompt'),t=document.getElementById('interact-text');nearbyInteractable=null;if(state.isHiding){p.classList.remove('hidden');t.textContent='Tekan [E] / AMBIL untuk keluar';return}if(keyMesh&&playerPos.distanceTo(new THREE.Vector3(keyMesh.position.x,0,keyMesh.position.z))<2.5){nearbyInteractable={type:'key'};p.classList.remove('hidden');t.textContent='🗝️ Ambil Kunci Emas';return}for(const wp of weaponPickups){if(wp.active&&playerPos.distanceTo(wp.position)<2.4){nearbyInteractable={type:'weapon',weapon:wp};p.classList.remove('hidden');t.textContent=WEAPONS[wp.type].icon+' Ambil '+WEAPONS[wp.type].name;return}}for(const lk of lockers){if(playerPos.distanceTo(lk.position)<2.3){nearbyInteractable={type:'locker',locker:lk};p.classList.remove('hidden');t.textContent='🚪 Menyorok di Almari';return}}if(exitDoorMesh&&playerPos.distanceTo(new THREE.Vector3(exitDoorMesh.position.x,0,exitDoorMesh.position.z))<3){nearbyInteractable={type:'exit'};p.classList.remove('hidden');t.textContent=state.hasKey?'🚪 BUKA PINTU KELUAR!':'🔒 Pintu Berkunci';return}p.classList.add('hidden')}
 function triggerInteract(){if(state.isHiding){state.isHiding=false;playerRig.root.visible=true;document.getElementById('locker-overlay').classList.add('hidden');document.getElementById('hiding-indicator').classList.add('hidden');return}if(!nearbyInteractable)return;if(nearbyInteractable.type==='key'){state.hasKey=true;scene.remove(keyMesh);scene.remove(keyLight);keyMesh=null;audio.playKeyPickup();const k=document.getElementById('key-status');k.textContent='🗝️Ada';showToast('🗝️ Kunci Emas dijumpai!');syncStateToFirebase(true)}else if(nearbyInteractable.type==='weapon'){const wp=nearbyInteractable.weapon;wp.active=false;wp.itemMesh.visible=false;wp.light.intensity=0;state.weapon=wp.type;updateCharacterWeaponMesh(playerRig,wp.type);document.getElementById('weapon-status').textContent=WEAPONS[wp.type].icon;showToast('Senjata: '+WEAPONS[wp.type].name);syncStateToFirebase(true)}else if(nearbyInteractable.type==='locker'){state.isHiding=true;playerRig.root.visible=false;document.getElementById('locker-overlay').classList.remove('hidden');document.getElementById('hiding-indicator').classList.remove('hidden')}else if(nearbyInteractable.type==='exit'){if(state.hasKey){audio.playVictory();endGame(true)}else showToast('Perlukan Kunci Emas!')}}
 function updateThirdPersonCamera(){if(state.isHiding){camera.position.set(playerPos.x,1.55,playerPos.z);camera.rotation.y=yaw;return}const dd=state.cameraViewMode==='full'?3.65:2.15,sh=state.isCrouching?1.15:1.55,pivot=new THREE.Vector3(playerPos.x,sh,playerPos.z),off=new THREE.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch)+.22,Math.cos(yaw)*Math.cos(pitch)).normalize();let safe=dd;for(let d=.5;d<=dd;d+=.25){const tp=pivot.clone().addScaledVector(off,d);if(checkWallCollision(tp,.35)){safe=Math.max(.55,d-.3);break}}const fp=pivot.clone().addScaledVector(off,safe);fp.y=Math.max(.55,Math.min(WALL_HEIGHT-.35,fp.y));camera.position.copy(fp);camera.lookAt(new THREE.Vector3(playerPos.x,state.isCrouching?.95:1.32,playerPos.z))}
 function updatePlayer(dt,elapsed){if(state.invulnerableTimer>0)state.invulnerableTimer-=dt;if(state.attackCooldown>0)state.attackCooldown-=dt;if(state.isHiding){updateThirdPersonCamera();return}const cd=CHARACTERS[state.selectedChar]||CHARACTERS.umar,sm=1+(state.upgrades.strength-1)*.10,sr=1+(state.upgrades.strength-1)*.20;const fwd=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),rgt=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),md=new THREE.Vector3();if(keys['KeyW']||keys['ArrowUp'])md.add(fwd);if(keys['KeyS']||keys['ArrowDown'])md.sub(fwd);if(keys['KeyD']||keys['ArrowRight'])md.add(rgt);if(keys['KeyA']||keys['ArrowLeft'])md.sub(rgt);const isM=md.lengthSq()>0;if(isM)md.normalize();const sprint=(keys['ShiftLeft']||keys['ShiftRight'])&&isM&&!state.isCrouching&&state.stamina>5;let sp=4.2*cd.speedMult*sm;if(sprint){sp*=1.55;state.stamina=Math.max(0,state.stamina-24*dt)}else state.stamina=Math.min(100,state.stamina+16*sr*dt);if(state.isCrouching)sp*=.55;document.getElementById('stamina-bar').style.width=state.stamina+'%';document.getElementById('stamina-text').textContent=Math.round(state.stamina)+'%';if(isM){const nx=playerPos.clone().add(new THREE.Vector3(md.x*sp*dt,0,0));if(!checkWallCollision(nx))playerPos.x=nx.x;const nz=playerPos.clone().add(new THREE.Vector3(0,0,md.z*sp*dt));if(!checkWallCollision(nz))playerPos.z=nz.z;const ta=Math.atan2(-md.x,-md.z);let diff=ta-playerRig.root.rotation.y;while(diff<-Math.PI)diff+=Math.PI*2;while(diff>Math.PI)diff-=Math.PI*2;playerRig.root.rotation.y+=diff*Math.min(1,dt*14);audio.playFootstep(sprint)}else{let diff=yaw-playerRig.root.rotation.y;while(diff<-Math.PI)diff+=Math.PI*2;while(diff>Math.PI)diff-=Math.PI*2;playerRig.root.rotation.y+=diff*Math.min(1,dt*8)}playerRig.root.position.copy(playerPos);animateCharacterRig(playerRig,dt,elapsed,isM,sprint,state.isCrouching,state.flashlightOn);updateThirdPersonCamera()}
@@ -218,21 +245,77 @@ const remoteAvatars={},botTeammates=[];
 function getOrCreateRemoteAvatar(uid,pd,slotIdx){if(remoteAvatars[uid])return remoteAvatars[uid];const s=pd.slotIdx!==undefined?pd.slotIdx:slotIdx;const suf=pd.registeredId?' ['+pd.registeredId+']':'';const rig=createFullBodyCharacter(pd.char||'bomoh',(pd.name||'Rakan')+suf,s,pd.bodyTier||0,pd.outfitLvl||1);updateCharacterWeaponMesh(rig,pd.weapon||'none');rig.root.position.set(pd.x||state.spawnPos.x,0,pd.z||state.spawnPos.z);scene.add(rig.root);remoteAvatars[uid]={rig,targetPos:rig.root.position.clone(),targetYaw:0};return remoteAvatars[uid]}
 function spawnBotTeammates(count){const cfg=[{uid:'bot_1',registeredId:'AI-101',name:'Aiman',char:'penyiasat',slotIdx:1,weapon:'spear',bodyTier:1},{uid:'bot_2',registeredId:'AI-102',name:'Tok Aki',char:'bomoh',slotIdx:2,weapon:'uv',bodyTier:0},{uid:'bot_3',registeredId:'AI-103',name:'Haziq',char:'penjaga',slotIdx:3,weapon:'crossbow',bodyTier:2}];for(let i=0;i<count;i++){const c=cfg[i];const d={uid:c.uid,registeredId:c.registeredId,name:c.name,char:c.char,slotIdx:c.slotIdx,weapon:c.weapon,bodyTier:c.bodyTier,x:state.spawnPos.x+(i+1)*.9,z:state.spawnPos.z+.65,yaw:0,lives:3};state.roomPlayers[c.uid]=d;const av=getOrCreateRemoteAvatar(c.uid,d,c.slotIdx);botTeammates.push({data:d,avatar:av,attackTimer:0});}}
 function updateBots(dt,elapsed){for(const b of botTeammates){const dist=b.avatar.rig.root.position.distanceTo(playerPos);let isM=false;if(dist>3.2){const dir=playerPos.clone().sub(b.avatar.rig.root.position).normalize();const np=b.avatar.rig.root.position.clone().addScaledVector(dir,3.3*dt);if(!checkWallCollision(np,.45)){b.avatar.rig.root.position.copy(np);b.avatar.rig.root.rotation.y=Math.atan2(-dir.x,-dir.z);isM=true}}animateCharacterRig(b.avatar.rig,dt,elapsed,isM,false,false,true);b.attackTimer-=dt;if(ghost&&state.ghostStunTimer<=0&&b.attackTimer<=0){if(b.avatar.rig.root.position.distanceTo(ghost.group.position)<4.5){b.attackTimer=2.5;b.avatar.rig.attackSwing=1;damageGhost(18,b.data.name+' menyerang hantu!')}}}}
-function updateTeammatesHUD(){const l=document.getElementById('teammates-list');if(!l)return;l.innerHTML='';Object.values(state.roomPlayers).forEach((p,idx)=>{const s=p.slotIdx!==undefined?p.slotIdx:idx,o=PLAYER_SLOT_OUTFITS[s%PLAYER_SLOT_OUTFITS.length],ci=CHARACTERS[p.char]||CHARACTERS.bomoh,wi=WEAPONS[p.weapon||'none'],h='❤️'.repeat(Math.max(0,p.lives??3));const r=document.createElement('div');r.className='flex items-center justify-between gap-2 bg-white/5 px-2 py-0.5 rounded';r.innerHTML='<span>'+(ci.icon||'')+' '+p.name+'</span><span>'+wi.icon+(h||'💀')+'</span>';l.appendChild(r)})}
+function updateTeammatesHUD(){const l=document.getElementById('teammates-list');if(!l)return;l.innerHTML='';Object.values(state.roomPlayers).forEach((p,idx)=>{const ci=CHARACTERS[p.char]||CHARACTERS.bomoh,wi=WEAPONS[p.weapon||'none'],h='❤️'.repeat(Math.max(0,p.lives??3));const r=document.createElement('div');r.className='flex items-center justify-between gap-2 bg-white/5 px-2 py-0.5 rounded';r.innerHTML='<span>'+(ci.icon||'')+' '+p.name+'</span><span>'+wi.icon+(h||'💀')+'</span>';l.appendChild(r)})}
 function launchMatch(seed){if(state.isPlaying)return;audio.init();audio.playClick();syncViewportToScreen();const t=BODY_TIERS[state.upgrades.body]||BODY_TIERS[0];state.maxLives=3+t.bonusLives;state.lives=state.maxLives;document.getElementById('hud-level-badge').textContent='🔥L'+state.level;applyUpgradesToActor();buildMansion(seed+state.level);ghost=new GhostEntity();if(state.isBotMode)spawnBotTeammates(state.maxPlayers-1);document.getElementById('menu-screen').classList.add('hidden');document.getElementById('hud').classList.remove('hidden');document.getElementById('room-code-badge').textContent=state.roomCode;updateLivesUI();updateDiamondsUI();updateTeammatesHUD();state.isPlaying=true;state.startTime=performance.now();showToast('🔥 Tahap '+state.level+' Bermula!')}
 async function endGame(win){if(state.isGameOver)return;state.isGameOver=true;state.isPlaying=false;if(document.exitPointerLock)document.exitPointerLock();const l=getLevelConfig(state.level),nb=document.getElementById('next-level-btn');if(win){state.diamonds+=l.clearRewardDiamonds;state.level+=1;nb.classList.remove('hidden');nb.textContent='🔥 TERUS KE TAHAP '+state.level}else nb.classList.add('hidden');updateDiamondsUI();const es=(performance.now()-state.startTime)/1000,m=Math.floor(es/60).toString().padStart(2,'0'),s=Math.floor(es%60).toString().padStart(2,'0');document.getElementById('stat-time').textContent=m+':'+s;document.getElementById('stat-diamonds').textContent='💎 '+state.diamonds;document.getElementById('stat-level').textContent='LVL '+(win?state.level-1:state.level);document.getElementById('end-level-subtitle').textContent=win?'Tahap '+(state.level-1)+' Berjaya!':'Tewas di Tahap '+state.level;document.getElementById('end-icon').textContent=win?'🏆':'💀';document.getElementById('end-title').textContent=win?'PASUKAN BERJAYA KELUAR!':'PASUKAN TEWAS';document.getElementById('cleanup-status-text').textContent=win?'🎉 +'+l.clearRewardDiamonds+' 💎 disimpan ke '+state.registeredId:'Cuba lagi, upgrade dulu.';document.getElementById('hud').classList.add('hidden');document.getElementById('end-screen').classList.remove('hidden')}
 let lastFrameTime=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-lastFrameTime)/1000);lastFrameTime=now;const el=now*.001;if(keyMesh)keyMesh.rotation.y=el*2.2;diamondPickups.forEach((dm,i)=>{if(dm.active){dm.mesh.rotation.y=el*2.6+i;dm.mesh.position.y=1.15+Math.sin(el*3.2+i)*.12}});weaponPickups.forEach((wp,i)=>{if(wp.active)wp.itemMesh.rotation.y=el*1.8+i});Object.values(remoteAvatars).forEach(av=>{const d=av.rig.root.position.distanceTo(av.targetPos);av.rig.root.position.lerp(av.targetPos,Math.min(1,dt*12));av.rig.root.rotation.y=av.targetYaw;animateCharacterRig(av.rig,dt,el,d>.03,false,false,true)});if(state.isPlaying&&!state.isGameOver){updatePlayer(dt,el);checkNearbyInteractables();updateExtraSpirits(dt,el);if(state.isBotMode)updateBots(dt,el);if(ghost)ghost.update(dt,el,playerPos)}renderer.render(scene,camera)}
 const charSlotMap={umar:0,bomoh:1,penyiasat:2,penjaga:3};
 function enterCharacterLobbyWithProfile(p){state.registeredId=p.playerId;state.playerName=p.name;state.playerPin=p.pin;state.diamonds=p.diamonds??3;state.level=p.level??1;state.upgrades=p.upgrades||{outfit:1,weapon:1,strength:1,body:0};state.selectedChar=p.lastChar||'umar';state.slotIndex=charSlotMap[state.selectedChar]??0;document.getElementById('lobby-player-id-badge').textContent='ID: '+state.registeredId;document.getElementById('lobby-player-name-badge').textContent=state.playerName;document.getElementById('lobby-diamond-count').textContent=state.diamonds;document.querySelectorAll('.char-card').forEach(c=>c.classList.toggle('selected',c.dataset.char===state.selectedChar));const ls=document.getElementById('level-selector');if(ls)ls.value=String(state.level);document.getElementById('register-screen').classList.add('hidden');document.getElementById('menu-screen').classList.remove('hidden')}
 const savedActiveId=localStorage.getItem('umar_active_player_id');if(savedActiveId){const la=getLocalAccounts();if(la[savedActiveId])enterCharacterLobbyWithProfile(la[savedActiveId])}
-document.getElementById('tab-new-register').addEventListener('click',()=>{document.getElementById('form-new-register').classList.remove('hidden');document.getElementById('form-existing-login').classList.add('hidden');document.getElementById('id-issued-card').classList.add('hidden')});
-document.getElementById('tab-existing-login').addEventListener('click',()=>{document.getElementById('form-existing-login').classList.remove('hidden');document.getElementById('form-new-register').classList.add('hidden');document.getElementById('id-issued-card').classList.add('hidden')});
+
+// TAB DAFTAR & LOG MASUK (AUTO PREFIX "UMAR-")
+document.getElementById('tab-new-register').addEventListener('click',()=>{
+  document.getElementById('tab-new-register').className='py-2 rounded-lg bg-red-800 font-bold text-xs';
+  document.getElementById('tab-existing-login').className='py-2 rounded-lg bg-white/10 text-gray-300 font-bold text-xs';
+  document.getElementById('form-new-register').classList.remove('hidden');
+  document.getElementById('form-existing-login').classList.add('hidden');
+  document.getElementById('id-issued-card').classList.add('hidden');
+});
+document.getElementById('tab-existing-login').addEventListener('click',()=>{
+  document.getElementById('tab-existing-login').className='py-2 rounded-lg bg-cyan-800 font-bold text-xs';
+  document.getElementById('tab-new-register').className='py-2 rounded-lg bg-white/10 text-gray-300 font-bold text-xs';
+  document.getElementById('form-existing-login').classList.remove('hidden');
+  document.getElementById('form-new-register').classList.add('hidden');
+  document.getElementById('id-issued-card').classList.add('hidden');
+  const loginInput=document.getElementById('login-id-input');
+  if(!loginInput.value.trim()||loginInput.value.trim()==='UMAR'){loginInput.value='UMAR-'}
+  loginInput.focus();
+  loginInput.setSelectionRange(loginInput.value.length,loginInput.value.length);
+});
+
+// DAFTAR BARU: AUTO GENERATE NAMA + NOMBOR
 let newlyRegisteredProfile=null;
-document.getElementById('form-new-register').addEventListener('submit',async e=>{e.preventDefault();const n=document.getElementById('reg-name-input').value.trim(),p=document.getElementById('reg-pin-input').value.trim();if(!n||p.length<4)return;const b=document.getElementById('btn-submit-register');b.disabled=true;b.textContent='⏳ MENJANA ID...';const nid=generateUniquePlayerID();newlyRegisteredProfile={playerId:nid,name:n,pin:p,diamonds:3,level:1,upgrades:{outfit:1,weapon:1,strength:1,body:0},lastChar:'umar',createdAt:Date.now()};await saveProfileToCloud(newlyRegisteredProfile);b.disabled=false;b.textContent='🪪 DAFTAR & DAPATKAN ID PESERTA';document.getElementById('issued-player-id').textContent=nid;document.getElementById('issued-player-name').textContent=n;document.getElementById('id-issued-card').classList.remove('hidden')});
+document.getElementById('form-new-register').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const rawName=document.getElementById('reg-name-input').value.trim();
+  const p=document.getElementById('reg-pin-input').value.trim();
+  if(!rawName){alert('Sila masukkan nama!');return}
+  if(p.length<4){alert('PIN mesti sekurang-kurangnya 4 digit!');return}
+  const b=document.getElementById('btn-submit-register');
+  b.disabled=true;b.textContent='⏳ MENJANA ID & NAMA...';
+  const randNum=generateUniqueNumber();
+  const nid='UMAR-'+randNum;
+  const generatedName=rawName+' #'+randNum;
+  newlyRegisteredProfile={playerId:nid,name:generatedName,pin:p,diamonds:3,level:1,upgrades:{outfit:1,weapon:1,strength:1,body:0},lastChar:'umar',createdAt:Date.now()};
+  await saveProfileToCloud(newlyRegisteredProfile);
+  b.disabled=false;b.textContent='🪪 DAFTAR & DAPATKAN ID PESERTA';
+  document.getElementById('issued-player-id').textContent=nid;
+  document.getElementById('issued-player-name').textContent=generatedName;
+  document.getElementById('id-issued-card').classList.remove('hidden');
+});
+
 document.getElementById('copy-player-id-btn').addEventListener('click',()=>{if(navigator.clipboard)navigator.clipboard.writeText(document.getElementById('issued-player-id').textContent);document.getElementById('copy-player-id-btn').textContent='Disalin ✓'});
 document.getElementById('proceed-to-lobby-btn').addEventListener('click',()=>{if(newlyRegisteredProfile)enterCharacterLobbyWithProfile(newlyRegisteredProfile)});
-document.getElementById('form-existing-login').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('login-id-input').value.trim().toUpperCase(),pin=document.getElementById('login-pin-input').value.trim();const b=document.getElementById('btn-submit-login');b.disabled=true;b.textContent='⏳ MENYEMAK...';const prof=await fetchProfileFromCloudOrLocal(id);b.disabled=false;b.textContent='🔓 LOG MASUK KE LOBI WATAK';if(!prof){alert('ID tidak dijumpai.');return}if(prof.pin!==pin){alert('PIN salah!');return}localStorage.setItem('umar_active_player_id',prof.playerId);enterCharacterLobbyWithProfile(prof)});
-document.getElementById('switch-account-btn').addEventListener('click',()=>{localStorage.removeItem('umar_active_player_id');document.getElementById('menu-screen').classList.add('hidden');document.getElementById('register-screen').classList.remove('hidden')});
+document.getElementById('form-existing-login').addEventListener('submit',async e=>{
+  e.preventDefault();
+  let id=document.getElementById('login-id-input').value.trim().toUpperCase();
+  if(/^\d+$/.test(id))id='UMAR-'+id;
+  const pin=document.getElementById('login-pin-input').value.trim();
+  const b=document.getElementById('btn-submit-login');
+  b.disabled=true;b.textContent='⏳ MENYEMAK...';
+  const prof=await fetchProfileFromCloudOrLocal(id);
+  b.disabled=false;b.textContent='🔓 LOG MASUK KE LOBI WATAK';
+  if(!prof){alert('ID '+id+' tidak dijumpai.');return}
+  if(prof.pin!==pin){alert('PIN salah!');return}
+  localStorage.setItem('umar_active_player_id',prof.playerId);
+  enterCharacterLobbyWithProfile(prof);
+});
+
+document.getElementById('switch-account-btn').addEventListener('click',()=>{
+  localStorage.removeItem('umar_active_player_id');
+  document.getElementById('menu-screen').classList.add('hidden');
+  document.getElementById('register-screen').classList.remove('hidden');
+});
 document.getElementById('level-selector')?.addEventListener('change',()=>{state.level=parseInt(document.getElementById('level-selector').value,10)||1;persistCurrentAccountState()});
 document.querySelectorAll('.size-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.size-btn').forEach(b=>b.className='size-btn py-2 flex-1 rounded-xl border border-white/15 bg-white/5 text-xs font-bold');btn.className='size-btn py-2 flex-1 rounded-xl border border-red-500 bg-red-950/40 text-white text-xs font-bold';state.maxPlayers=parseInt(btn.dataset.size,10)})});
 document.querySelectorAll('.char-card').forEach(card=>{card.addEventListener('click',()=>{document.querySelectorAll('.char-card').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');state.selectedChar=card.dataset.char;state.slotIndex=charSlotMap[state.selectedChar]??0;persistCurrentAccountState()})});
@@ -245,18 +328,84 @@ document.getElementById('next-level-btn').addEventListener('click',()=>window.lo
 document.getElementById('restart-btn').addEventListener('click',()=>window.location.reload());
 requestAnimationFrame(animate);
 </script>
+
+<!-- SKRIP JOYSTICK & BUTANG LOGOUT -->
 <script>
 (function(){
   const zone=document.getElementById('joyZone'), knob=document.getElementById('joyKnob'), base=document.getElementById('joyBase');
   let active=false, curX=0, curY=0, targetX=0, targetY=0, keysDown={};
-  function send(code,down){if(down&&!keysDown[code]){window.dispatchEvent(new KeyboardEvent('keydown',{code:code}));keysDown[code]=true}if(!down&&keysDown[code]){window.dispatchEvent(new KeyboardEvent('keyup',{code:code}));keysDown[code]=false}}
-  function loop(){curX+=(targetX-curX)*0.22;curY+=(targetY-curY)*0.22;knob.style.transform='translate('+curX+'px,'+curY+'px)';send('KeyW',curY<-8);send('KeyS',curY>8);send('KeyA',curX<-8);send('KeyD',curX>8);requestAnimationFrame(loop)}loop();
-  function move(e){if(!active)return;e.preventDefault();const t=e.touches?e.touches[0]:e;const r=base.getBoundingClientRect();let dx=t.clientX-(r.left+r.width/2),dy=t.clientY-(r.top+r.height/2);const max=38,len=Math.hypot(dx,dy);if(len>max){dx=dx/len*max;dy=dy/len*max}targetX=dx;targetY=dy}
-  function end(){active=false;targetX=0;targetY=0;send('KeyW',false);send('KeyS',false);send('KeyA',false);send('KeyD',false)}
-  zone.addEventListener('touchstart',e=>{active=true;move(e)},{passive:false});zone.addEventListener('touchmove',move,{passive:false});zone.addEventListener('touchend',end);zone.addEventListener('touchcancel',end);
-  zone.addEventListener('mousedown',e=>{active=true;move({touches:[e]})});window.addEventListener('mousemove',e=>{if(active)move({touches:[e]})});window.addEventListener('mouseup',end);
-  setInterval(()=>{const inLogin=!document.getElementById('register-screen')?.classList.contains('hidden');const inGame=!document.getElementById('hud')?.classList.contains('hidden');zone.style.display=inGame?setProperty('display', inGame?'block':'none', 'important');const lb=document.getElementById('display:noneFix');if(lb)lb.style.setProperty('display', inLogin?'none':'flex', 'important');const c=document.getElementById('cahayaSamar');if(c)c.style.display=inGame?'block':'none'},300);
-  document.getElementById('display:noneFix').addEventListener('click',()=>{document.getElementById('switch-account-btn')?.click();if(!document.getElementById('hud')?.classList.contains('hidden')){localStorage.removeItem('umar_active_player_id');window.location.reload()}});
+
+  function send(code,down){
+    if(down&&!keysDown[code]){
+      keys[code]=true;
+      window.dispatchEvent(new KeyboardEvent('keydown',{code:code}));
+      keysDown[code]=true;
+    }
+    if(!down&&keysDown[code]){
+      keys[code]=false;
+      window.dispatchEvent(new KeyboardEvent('keyup',{code:code}));
+      keysDown[code]=false;
+    }
+  }
+
+  function loop(){
+    curX+=(targetX-curX)*0.25;
+    curY+=(targetY-curY)*0.25;
+    knob.style.transform='translate('+curX+'px,'+curY+'px)';
+    send('KeyW',curY<-8);
+    send('KeyS',curY>8);
+    send('KeyA',curX<-8);
+    send('KeyD',curX>8);
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  function move(e){
+    if(!active)return;
+    if(e.cancelable)e.preventDefault();
+    const t=e.touches?e.touches[0]:e;
+    const r=base.getBoundingClientRect();
+    let dx=t.clientX-(r.left+r.width/2);
+    let dy=t.clientY-(r.top+r.height/2);
+    const max=38, len=Math.hypot(dx,dy);
+    if(len>max){dx=dx/len*max;dy=dy/len*max}
+    targetX=dx;targetY=dy;
+  }
+
+  function end(){
+    active=false;targetX=0;targetY=0;
+    send('KeyW',false);send('KeyS',false);send('KeyA',false);send('KeyD',false);
+  }
+
+  zone.addEventListener('touchstart',e=>{active=true;move(e)},{passive:false});
+  zone.addEventListener('touchmove',move,{passive:false});
+  zone.addEventListener('touchend',end);
+  zone.addEventListener('touchcancel',end);
+  zone.addEventListener('mousedown',e=>{active=true;move(e)});
+  window.addEventListener('mousemove',e=>{if(active)move(e)});
+  window.addEventListener('mouseup',end);
+
+  const logoutBtn=document.getElementById('logoutBtnFix');
+  setInterval(()=>{
+    const inLogin=!document.getElementById('register-screen')?.classList.contains('hidden');
+    const inGame=!document.getElementById('hud')?.classList.contains('hidden');
+    zone.style.display=inGame?'block':'none';
+    if(logoutBtn)logoutBtn.style.display=inLogin?'none':'flex';
+    const c=document.getElementById('cahayaSamar');
+    if(c)c.style.display=inGame?'block':'none';
+  },200);
+
+  if(logoutBtn){
+    logoutBtn.addEventListener('click',()=>{
+      localStorage.removeItem('umar_active_player_id');
+      if(!document.getElementById('hud')?.classList.contains('hidden')){
+        window.location.reload();
+      }else{
+        document.getElementById('menu-screen')?.classList.add('hidden');
+        document.getElementById('register-screen')?.classList.remove('hidden');
+      }
+    });
+  }
 })();
 </script>
 </body>
